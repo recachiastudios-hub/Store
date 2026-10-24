@@ -91,6 +91,40 @@ footer#ftr{border-top:1px solid var(--line);margin-top:30px;padding:24px 16px 32
 .card img{object-fit:contain;background:var(--bg)}.thumbs img{object-fit:contain;background:var(--bg)}#big{max-height:60vh;object-fit:contain;background:var(--bg)}
 .ic{width:22px;height:22px;object-fit:contain;display:block}.round .ic{width:20px;height:20px}.logo:has(img){border:0}.logo img{width:100%;height:100%;object-fit:contain}
 .badge.sp{background:#1e293b;color:#93c5fd}[data-theme="light"] .badge.sp{background:#dbeafe;color:#1d4ed8}
+
+/* ---- v2 additions ---- */
+.ic{width:22px;height:22px;object-fit:contain;display:block}
+.cartlink{white-space:nowrap}
+.logo:not(:has(img))::after{content:attr(data-l);font-size:20px;color:var(--ink)}
+.ph{border-radius:14px;overflow:hidden;background:#faf8f5}
+.card img{background:#faf8f5;border-radius:14px;object-fit:contain}
+.tags{position:absolute;top:8px;inset-inline-start:8px;display:flex;flex-direction:column;gap:4px;align-items:flex-start;z-index:2}
+.tags .tag{position:static;inset-inline-start:auto}
+.tag.sp{background:#2563eb;color:#fff}
+.sl{position:relative;border-radius:16px;overflow:hidden;background:#faf8f5}
+.trk{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.trk::-webkit-scrollbar{display:none}
+dialog .trk img{flex:0 0 100%;width:100%;aspect-ratio:1;max-height:60vh;object-fit:contain;scroll-snap-align:center;scroll-snap-stop:always;background:#faf8f5;border-radius:0}
+.dots{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:10px}
+.dots i{width:8px;height:8px;border-radius:99px;background:var(--mute);opacity:.4;cursor:pointer;transition:all .2s}
+.dots i.on{width:20px;background:var(--ink);opacity:1}
+.ct{display:flex;align-items:center;gap:8px}
+
+/* ---- v3: same header in both languages, bigger rounded photos ---- */
+header#hdr,.brand,.acts{direction:ltr}
+header#hdr{flex-wrap:nowrap}.brand{min-width:0;flex:1}.brand>span:last-child{min-width:0}.brand small,.brand .bn{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.acts{flex:none}
+.brand>span:last-child{text-align:start}
+.ph{border-radius:20px;overflow:hidden;isolation:isolate;-webkit-mask-image:-webkit-radial-gradient(white,black)}
+.card img{border-radius:20px}
+.sl{border-radius:20px;overflow:hidden;isolation:isolate;-webkit-mask-image:-webkit-radial-gradient(white,black)}
+.trk{border-radius:20px}
+dialog .trk img{border-radius:20px}
+
+/* ---- ghost loading ---- */
+.sk{background:linear-gradient(90deg,var(--line) 25%,color-mix(in srgb,var(--line) 55%,var(--mute)) 50%,var(--line) 75%);background-size:200% 100%;animation:skm 1.2s linear infinite;border-radius:8px}
+@keyframes skm{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){.sk{animation:none}}
+.sk-img{aspect-ratio:1;border-radius:20px}
 </style>
 </head>
 <body>
@@ -106,28 +140,30 @@ footer#ftr{border-top:1px solid var(--line);margin-top:30px;padding:24px 16px 32
     <select id="fo" aria-label="Sort"><option value="">Newest</option><option value="a">Price: low to high</option><option value="d">Price: high to low</option><option value="p">Most popular</option></select>
     <label><input type="checkbox" id="fi"> In stock</label>
   </div>
-  <div id="shopGrid" class="grid"><p class="muted">Loading products…</p></div>
+  <div id="shopGrid" class="grid" aria-busy="true"><div class="card" aria-hidden="true"><div class="sk sk-img"></div><div class="sk" style="height:14px;width:70%;margin:12px 0 8px"></div><div class="sk" style="height:14px;width:40%"></div><div class="sk" style="height:34px;border-radius:99px;margin-top:12px"></div></div><div class="card" aria-hidden="true"><div class="sk sk-img"></div><div class="sk" style="height:14px;width:70%;margin:12px 0 8px"></div><div class="sk" style="height:14px;width:40%"></div><div class="sk" style="height:34px;border-radius:99px;margin-top:12px"></div></div><div class="card" aria-hidden="true"><div class="sk sk-img"></div><div class="sk" style="height:14px;width:70%;margin:12px 0 8px"></div><div class="sk" style="height:14px;width:40%"></div><div class="sk" style="height:34px;border-radius:99px;margin-top:12px"></div></div><div class="card" aria-hidden="true"><div class="sk sk-img"></div><div class="sk" style="height:14px;width:70%;margin:12px 0 8px"></div><div class="sk" style="height:14px;width:40%"></div><div class="sk" style="height:34px;border-radius:99px;margin-top:12px"></div></div><div class="card" aria-hidden="true"><div class="sk sk-img"></div><div class="sk" style="height:14px;width:70%;margin:12px 0 8px"></div><div class="sk" style="height:14px;width:40%"></div><div class="sk" style="height:34px;border-radius:99px;margin-top:12px"></div></div><div class="card" aria-hidden="true"><div class="sk sk-img"></div><div class="sk" style="height:14px;width:70%;margin:12px 0 8px"></div><div class="sk" style="height:14px;width:40%"></div><div class="sk" style="height:34px;border-radius:99px;margin-top:12px"></div></div></div>
 </section>
 </main>
 <footer id="ftr"></footer>
 <dialog id="pd"></dialog>
 <div id="toast" class="toast" hidden></div>
 <script>
-const API="https://young-hat-32fc.recachiastudios.workers.dev",PAGE="shop",ROOT=PAGE==="cart"?"../":"./";
-let LOW=2;const isKid=t=>/girl|boy|baby|kid/i.test(t);
+const API="https://young-hat-32fc.recachiastudios.workers.dev",PAGE="shop",ROOT=location.protocol==="file:"?(PAGE==="cart"?"../":"./"):location.origin+(PAGE==="cart"?location.pathname.replace(/\/cart(\.html|\/index\.html|\/)?$/,"/"):location.pathname.replace(/[^\/]*$/,""));
+let LOW=2,ready=false;const isKid=t=>/girl|boy|baby|kid/i.test(t);
 const $=i=>document.getElementById(i),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
 let lang=LS("eshraqa.lang")||"ar",theme=LS("eshraqa.theme")||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");
 const H=document.documentElement;H.lang=lang;H.dir=lang==="ar"?"rtl":"ltr";H.dataset.theme=theme;
-const FB={Cart:"Cart",Sun:"☀",Moon:"☾"},ic=k=>`<img class="ic" src="${ROOT}icons/${k}.png" alt="" onerror="this.replaceWith(document.createTextNode('${FB[k]}'))">`;
+const ICS={Cart:["cart.png","Cart.png","icons/cart.png","icons/Cart.png"],Sun:["Sun.png","sun.png","icons/Sun.png","icons/sun.png"],Moon:["Moon.png","moon.png","icons/Moon.png","icons/moon.png"],Logo:["Icon.png","icon.png","Logo.png","logo.png","icons/Icon.png","icons/icon.png"]},FB={Cart:"🛒",Sun:"☀",Moon:"☾",Logo:""};
+function icErr(el,k){const c=ICS[k],i=+el.dataset.i+1;if(i<c.length){el.dataset.i=i;el.src=ROOT+c[i]}else el.replaceWith(document.createTextNode(FB[k]))}
+const ic=(k,c="ic")=>`<img class="${c}" data-i="0" src="${ROOT}${ICS[k][0]}" alt="" onerror="icErr(this,'${k}')">`;
 const AD="٠١٢٣٤٥٦٧٨٩",n=s=>lang==="ar"?String(s).replace(/\d/g,d=>AD[d]):String(s);
 const egp=v=>lang==="ar"?Number(v).toLocaleString("ar-EG")+" ج.م":"EGP "+Number(v).toLocaleString();
 const EMPTY=()=>({products:[],sales:[],settings:{}});let db=EMPTY();const prod=id=>db.products.find(p=>p.id===id);
 const pn=p=>lang==="en"&&p.nameEn?p.nameEn:p.name,pdsc=p=>lang==="en"&&p.descEn?p.descEn:(p.desc||"");
 let cart=[];try{cart=JSON.parse(LS("cart.v1"))||[]}catch(e){}
-const saveCart=()=>LS("cart.v1",JSON.stringify(cart)),lines=()=>cart.map(l=>({...l,p:prod(l.id)})).filter(l=>l.p);
+const saveCart=()=>LS("cart.v1",JSON.stringify(cart)),snap=p=>({name:p.name,nameEn:p.nameEn,price:p.price,color:p.color,special:p.special,qty:p.qty,type:p.type}),lines=()=>cart.map((l,i)=>({...l,i,p:prod(l.id)||(l.s?{id:l.id,...l.s}:null)})).filter(l=>l.p);
 /* ---- Arabic translation (English text on the left, Arabic on the right). Add new words here. ---- */
-const D={"Shop":"المتجر","Cart":"السلة","All pajamas":"كل البيجامات","Women":"نسائي","Kids":"أطفال","Search pajamas…":"ابحث عن بيجاما…","Category":"القسم","Size":"المقاس","Color":"اللون","Max price":"أعلى سعر","Newest":"الأحدث","Price: low to high":"السعر: الأقل أولًا","Price: high to low":"السعر: الأعلى أولًا","Most popular":"الأكثر مشاهدة","In stock":"متوفر","Sold out":"نفدت الكمية","View product":"عرض المنتج","Add to cart":"أضف إلى السلة","Close":"إغلاق","Quantity":"الكمية","Loading products…":"جارٍ تحميل المنتجات…","Our collection is coming soon.":"مجموعتنا قادمة قريبًا.","No products match.":"لا توجد منتجات مطابقة.","Clear filters":"مسح الفلاتر","Special order":"طلب خاص","Order this item":"اطلب هذا المنتج","Not in stock. Made only when you order it.":"غير متوفر بالمخزون. يُجهَّز عند الطلب فقط.","Back to store":"العودة إلى المتجر","Sale":"تخفيض","New":"جديد","Added to cart":"تمت الإضافة إلى السلة","Your shopping cart":"سلة التسوق","Total items":"عدد القطع","Order subtotal":"إجمالي الطلب","Delivery charges are not included. Payment is arranged with the seller.":"لا تشمل رسوم التوصيل. يتم الاتفاق على الدفع مع البائع.","Delivery details":"بيانات التوصيل","Customer name":"الاسم","Delivery address or area":"عنوان التوصيل أو المنطقة","Additional notes (optional)":"ملاحظات إضافية (اختياري)","Delivery preferences or other details":"تفضيلات التوصيل أو أي تفاصيل أخرى","Remove":"حذف","Fewer":"أقل","More":"أكثر","Your cart is empty. Open a product and press Add to cart.":"سلتك فارغة. افتح أي منتج واضغط على أضف إلى السلة.","Check out":"إتمام الطلب","Back to shop":"العودة إلى المتجر","Theme":"المظهر","Contact us":"تواصل معنا","Instagram":"إنستجرام","My order":"طلبي","Subtotal":"الإجمالي","Name":"الاسم","Address":"العنوان","Notes":"ملاحظات","Please add your name and delivery address first.":"من فضلك اكتب اسمك وعنوان التوصيل أولًا.","Order image created. Please send it to us through Instagram or any app you like.":"تم إنشاء صورة الطلب. من فضلك أرسلها لنا عبر إنستجرام أو أي تطبيق تفضله.","Could not load products. Check your connection and refresh.":"تعذّر تحميل المنتجات. تأكد من الاتصال وأعد تحميل الصفحة.","Women’s pajama set":"طقم بيجاما نسائي","Women’s shorts set":"طقم شورت نسائي","Women’s nightgown":"قميص نوم نسائي","Women’s robe":"روب نسائي","Girls’ pajamas":"بيجامات بناتي","Boys’ pajamas":"بيجامات ولادي","Baby sleepwear":"ملابس نوم للرضع","Accessories":"إكسسوارات","Black":"أسود","White":"أبيض","Pink":"وردي","Red":"أحمر","Blue":"أزرق","Navy":"كحلي","Green":"أخضر","Grey":"رمادي","Gray":"رمادي","Beige":"بيج","Purple":"بنفسجي","Yellow":"أصفر","Brown":"بني","Orange":"برتقالي"};
+const D={"Shop":"المتجر","Cart":"السلة","All pajamas":"كل البيجامات","Women":"نسائي","Kids":"أطفال","Search pajamas…":"ابحث عن بيجاما…","Category":"النوع","Size":"المقاس","Color":"اللون","Max price":"أعلى سعر","Newest":"الأحدث","Price: low to high":"السعر: الأقل أولًا","Price: high to low":"السعر: الأعلى أولًا","Most popular":"الأكثر مشاهدة","In stock":"متوفر","Sold out":"نفدت الكمية","View product":"عرض المنتج","Add to cart":"أضف إلى السلة","Close":"إغلاق","Quantity":"الكمية","Loading products…":"جارٍ تحميل المنتجات…","Our collection is coming soon.":"مجموعتنا قادمة قريبًا.","No products match.":"لا توجد منتجات مطابقة.","Clear filters":"مسح الفلاتر","Special order":"طلب خاص","Order this item":"اطلب هذا المنتج","Not in stock. Made only when you order it. Extra fees may apply to the listed price.":"غير متوفر بالمخزون. يُجهَّز عند الطلب فقط، وقد تُضاف رسوم إضافية على السعر المعروض.","Extra fees may apply to special orders.":"قد تُضاف رسوم إضافية على الطلبات الخاصة.","Could not reach the store server. Showing your saved cart.":"تعذّر الاتصال بالخادم. نعرض السلة المحفوظة لديك.","Back to store":"العودة إلى المتجر","Sale":"تخفيض","New":"جديد","Added to cart":"تمت الإضافة إلى السلة","Your shopping cart":"سلة التسوق","Total items":"عدد القطع","Order subtotal":"إجمالي الطلب","Delivery charges are not included. Payment is arranged with the seller.":"لا تشمل رسوم التوصيل. يتم الاتفاق على الدفع مع البائع.","Delivery details":"بيانات التوصيل","Customer name":"الاسم","Delivery address or area":"عنوان التوصيل أو المنطقة","Additional notes (optional)":"ملاحظات إضافية (اختياري)","Delivery preferences or other details":"تفضيلات التوصيل أو أي تفاصيل أخرى","Remove":"حذف","Fewer":"أقل","More":"أكثر","Your cart is empty. Open a product and press Add to cart.":"سلتك فارغة. افتح أي منتج واضغط على أضف إلى السلة.","Check out":"إتمام الطلب","Back to shop":"العودة إلى المتجر","Theme":"المظهر","Contact us":"تواصل معنا","Instagram":"إنستجرام","My order":"طلبي","Subtotal":"الإجمالي","Name":"الاسم","Address":"العنوان","Notes":"ملاحظات","Please add your name and delivery address first.":"من فضلك اكتب اسمك وعنوان التوصيل أولًا.","Order image created. Please send it to us through Instagram or any app you like.":"تم إنشاء صورة الطلب. من فضلك أرسلها لنا عبر إنستجرام أو أي تطبيق تفضله.","Could not load products. Check your connection and refresh.":"تعذّر تحميل المنتجات. تأكد من الاتصال وأعد تحميل الصفحة.","Women’s pajama set":"طقم بيجاما نسائي","Women’s shorts set":"طقم شورت نسائي","Women’s nightgown":"قميص نوم نسائي","Women’s robe":"روب نسائي","Girls’ pajamas":"بيجامات بناتي","Boys’ pajamas":"بيجامات ولادي","Baby sleepwear":"ملابس نوم للرضع","Accessories":"إكسسوارات","Black":"أسود","White":"أبيض","Pink":"وردي","Red":"أحمر","Blue":"أزرق","Navy":"كحلي","Green":"أخضر","Grey":"رمادي","Gray":"رمادي","Beige":"بيج","Purple":"بنفسجي","Yellow":"أصفر","Brown":"بني","Orange":"برتقالي"};
 const R=[[/^Only (\d+) left$/,"باقي $1 فقط"],[/^(\d+) items?$/,"$1 قطعة"],[/^View cart · (\d+) items? · (.*)$/,"عرض السلة · $1 قطعة · $2"],[/^Sizes: (.*)$/,"المقاسات: $1"],[/^Size (.+)$/,"المقاس $1"],[/^(.*) each$/,"$1 للقطعة"],[/^Call (.*)$/,"اتصل $1"]];
 const tr=s=>{if(lang!=="ar")return s;const k=s.trim();if(!k)return s;let r=D[k];if(r===undefined){r=k;for(const[re,p]of R)if(re.test(k)){r=k.replace(re,p);break}}
   r=r.replace(/(\d+)-(\d+)Y/g,"$1-$2 سنة").replace(/\d/g,d=>AD[d]);return r===k?s:s.replace(k,()=>r)};
@@ -137,21 +173,23 @@ function walk(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT)
 const brandName=()=>{const s=db.settings.name;return s&&s!=="Your Store"?s:(lang==="ar"?"إشراقة":"Eshraqa")};
 const tagline=()=>{const s=db.settings;return lang==="en"?(s.taglineEn||s.tagline||"Women’s & kids’ pajamas"):(s.tagline||"بيجامات نسائي وأطفال")};
 function chrome(){const s=db.settings,nm=brandName(),ig=(s.insta||"").replace(/^@/,"").trim(),phone=s.phone||"01055408169",ph=phone.replace(/[^\d+]/g,""),ann=lang==="en"?(s.announceEn||s.announce):s.announce;
-  document.title=nm;let fl=document.querySelector("link[rel=icon]");if(!fl){fl=document.createElement("link");fl.rel="icon";document.head.appendChild(fl)}fl.href=s.logo||ROOT+"icons/Icon.png";$("ann").hidden=!ann;$("ann").textContent=ann||"";
+  document.title=nm;let fl=document.querySelector("link[rel=icon]");if(!fl){fl=document.createElement("link");fl.rel="icon";document.head.appendChild(fl)}fl.href=ROOT+"Icon.png";$("ann").hidden=!ann;$("ann").textContent=ann||"";
   /* LOGO: upload it in the developer page under Settings. The dashed circle is the reserved logo space. */
-  $("hdr").innerHTML=`<a class="brand" href="${ROOT}"><span class="logo"><img src="${s.logo||ROOT+"icons/Icon.png"}" alt="" onerror="this.replaceWith(document.createTextNode('LOGO'))"></span><span><b class="bn">${esc(nm)}</b><small>${esc(tagline())}</small></span></a>
-  <div class="acts">${PAGE==="cart"?`<a class="cartlink" href="${ROOT}">Back to store</a>`:`<a class="cartlink" href="${ROOT}cart/" aria-label="Cart">${ic("Cart")}<span class="cn" id="cartN">${cart.reduce((a,l)=>a+l.q,0)}</span></a>`}<button class="round" id="themeB" aria-label="Theme">${ic(theme==="dark"?"Sun":"Moon")}</button></div>`;
+  $("hdr").innerHTML=`<a class="brand" href="${ROOT}"><span class="logo" data-l="${esc(nm).slice(0,1)}">${ic("Logo","")}</span><span>${ready?`<b class="bn">${esc(nm)}</b><small>${esc(tagline())}</small>`:'<b class="bn sk" style="width:110px;height:20px"></b><small class="sk" style="width:150px;height:12px;margin-top:6px"></small>'}</span></a>
+  <div class="acts">${PAGE==="cart"?`<a class="cartlink" href="${ROOT}">Back to store</a>`:`<a class="cartlink" href="${ROOT}cart/" aria-label="Cart">${ic("Cart")}<span>Cart</span><span class="cn" id="cartN">${cart.reduce((a,l)=>a+l.q,0)}</span></a>`}<button class="round" id="themeB" aria-label="Theme">${ic(theme==="dark"?"Sun":"Moon")}</button></div>`;
   const ct=[ig&&`<a href="https://instagram.com/${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`,ph&&`<a href="tel:${ph}">Call ${esc(phone)}</a>`].filter(Boolean).join("<br>");
   $("ftr").innerHTML=`<div class="fg"><div><b class="bn">${esc(nm)}</b><p class="muted">${esc(tagline())}</p></div><div><b>Shop</b><br><a href="${ROOT}">All pajamas</a><br><a href="${ROOT}cart/">Cart</a></div>${ct?`<div><b>Contact us</b><br>${ct}</div>`:""}</div><p class="muted cp"><span>© ${new Date().getFullYear()} ${esc(nm)}</span><a href="#" id="langB">${lang==="ar"?"English":"العربية"}</a></p>`;
+  const ctt=$("cartTitle");if(ctt)ctt.innerHTML=ic("Cart")+"<span>Your shopping cart</span>";
   const dp=$("donePh");if(dp){dp.href="tel:"+ph;dp.textContent=phone}
   $("langB").onclick=e=>{e.preventDefault();LS("eshraqa.lang",lang==="ar"?"en":"ar");location.reload()};
   $("themeB").onclick=()=>{theme=theme==="dark"?"light":"dark";LS("eshraqa.theme",theme);H.dataset.theme=theme;$("themeB").innerHTML=ic(theme==="dark"?"Sun":"Moon")}}
-async function loadData(){const r=await fetch(API+"/api/store");db=Object.assign(EMPTY(),await r.json());db.products=db.products.filter(p=>!p.hidden);LOW=db.settings.low??2}
+async function loadData(){const r=await fetch(API+"/api/store?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);db=Object.assign(EMPTY(),await r.json());db.products=db.products.filter(p=>!p.hidden);LOW=db.settings.low??2;cart.forEach(l=>{const p=prod(l.id);if(p)l.s=snap(p)})}
 let tt;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,1800)}
 function route(){saveCart();const q=cart.reduce((a,l)=>a+l.q,0),e=$("cartN");if(e)e.textContent=q;const b=$("cbar");
   if(b){const L=lines(),sub=L.reduce((a,l)=>a+l.q*l.p.price,0);b.hidden=!L.length;b.textContent=`View cart · ${q} item${q>1?"s":""} · ${egp(sub)}`}
   if(PAGE==="cart")renderCart()}
 let grp="",loaded=false;const seen=new Set(),isNew=p=>p.created&&Date.now()-p.created<7*864e5;
+const tagsH=p=>{const t=[];if(p.old>p.price)t.push('<span class="tag sale">Sale</span>');else if(isNew(p))t.push('<span class="tag">New</span>');if(p.special)t.push('<span class="tag sp">Special order</span>');return t.length?`<div class="tags">${t.join("")}</div>`:""};
 function clearF(){["fq","fc","fs","fl","fp"].forEach(i=>$(i).value="");$("fi").checked=false;$("fo").value="";grp="";document.querySelectorAll("#grp button").forEach((x,i)=>x.classList.toggle("pri",i===0));renderShop()}
 document.querySelectorAll("#grp button").forEach(b=>b.onclick=()=>{grp=b.dataset.g;document.querySelectorAll("#grp button").forEach(x=>x.classList.toggle("pri",x===b));renderShop()});
 /* ---- Shop ---- */
@@ -163,27 +201,28 @@ function renderShop(){
   const L=db.products.filter(p=>(!q||pn(p).toLowerCase().includes(q))&&(!c||p.type===c)&&(!grp||(isKid(p.type)?"k":"w")===grp)&&(!s||p.sizes.includes(s))&&(!l||p.color===l)&&(isNaN(mp)||p.price<=mp)&&(!st||p.qty>0&&!p.special));
   const o=$("fo").value;if(o==="a")L.sort((a,b)=>a.price-b.price);if(o==="d")L.sort((a,b)=>b.price-a.price);if(o==="p")L.sort((a,b)=>b.clicks-a.clicks);
   const price=p=>`<p><b>${egp(p.price)}</b>${p.old>p.price?` <s class="muted">${egp(p.old)}</s>`:""}</p>`;
-  $("shopGrid").innerHTML=L.length?L.map(p=>`<div class="card" ${p.qty<1&&!p.special?'style="opacity:.7"':""}><div class="ph" onclick="openP('${p.id}')"><img src="${p.photo}" alt="${esc(pn(p))}" loading="lazy">${p.old>p.price?'<span class="tag sale">Sale</span>':isNew(p)?'<span class="tag">New</span>':""}</div><h3>${esc(pn(p))}</h3>${price(p)}
+  $("shopGrid").innerHTML=L.length?L.map(p=>`<div class="card" ${p.qty<1&&!p.special?'style="opacity:.7"':""}><div class="ph" onclick="openP('${p.id}')"><img src="${p.photo}" alt="${esc(pn(p))}" loading="lazy">${tagsH(p)}</div><h3>${esc(pn(p))}</h3>${price(p)}
   ${p.special?'<span class="badge sp">Special order</span>':p.qty===0?'<span class="badge low">Sold out</span>':p.qty<=LOW?`<span class="badge low">Only ${p.qty} left</span>`:'<span class="badge">In stock</span>'}
   <p><small>Sizes: ${p.sizes.join(", ")}</small></p><button class="full" onclick="openP('${p.id}')">View product</button></div>`).join(""):(db.products.length?`<p class="muted">No products match. <a href="#shop" onclick="clearF();return false" style="color:inherit">Clear filters</a></p>`:'<p class="muted">Our collection is coming soon.</p>')}
 ["fq","fc","fs","fl","fp","fi","fo"].forEach(i=>$(i).oninput=renderShop);
 let pick={s:"",q:1};
 function openP(id){const p=prod(id);if(!p)return;if(!seen.has(id)){seen.add(id);p.clicks++;fetch(API+"/api/click",{method:"POST",body:JSON.stringify({id})}).catch(()=>{})}
   pick={s:p.sizes[0],q:1};const ph=p.photos&&p.photos.length?p.photos:[p.photo];
-  $("pd").innerHTML=`<img id="big" src="${ph[0]}" alt="${esc(pn(p))}">${ph.length>1?`<div class="thumbs">${ph.map(x=>`<img src="${x}" alt="" onclick="$('big').src=this.src">`).join("")}</div>`:""}
-  <h2 style="margin-top:12px">${esc(pn(p))}</h2><p><b>${egp(p.price)}</b>${p.old>p.price?` <s class="muted">${egp(p.old)}</s>`:""}${p.color?` · ${esc(p.color)}`:""}</p>
-  <p class="muted">${esc(pdsc(p))}</p>${p.special?`<p><span class="badge sp">Special order</span><br><small class="muted">Not in stock. Made only when you order it.</small></p>`:""}${p.qty>0&&p.qty<=LOW?`<p><span class="badge low">Only ${p.qty} left</span></p>`:""}
+  $("pd").innerHTML=`<div class="sl"><div class="trk" id="trk">${ph.map(x=>`<img src="${x}" alt="${esc(pn(p))}">`).join("")}</div>${tagsH(p)}</div>${ph.length>1?`<div class="dots" id="dots">${ph.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}
+  <h2 style="margin-top:12px">${esc(pn(p))}</h2><p><b>${egp(p.price)}</b>${p.old>p.price?` <s class="muted">${egp(p.old)}</s>`:""}${p.color?` · <span>${esc(p.color)}</span>`:""}</p>
+  <p class="muted">${esc(pdsc(p))}</p>${p.special?`<p><span class="badge sp">Special order</span><br><small class="muted">Not in stock. Made only when you order it. Extra fees may apply to the listed price.</small></p>`:""}${p.qty>0&&p.qty<=LOW?`<p><span class="badge low">Only ${p.qty} left</span></p>`:""}
   <label>Size</label><div class="pills" id="d-s">${p.sizes.map((x,i)=>`<button class="${i?"":"pri"}" data-s="${x}">${x}</button>`).join("")}</div>
   <label>Quantity</label><div class="qty"><button class="sm" id="dm" aria-label="Fewer">−</button><b id="dq">1</b><button class="sm" id="dp" aria-label="More">+</button></div>
   <div class="row" style="margin-top:16px"><button onclick="$('pd').close()">Close</button>
   <button class="pri" ${p.qty<1&&!p.special?"disabled":""} onclick="addC('${p.id}')">${p.special?"Order this item":p.qty<1?"Sold out":"Add to cart"}</button></div>`;
   document.querySelectorAll("#d-s button").forEach(b=>b.onclick=()=>{pick.s=b.dataset.s;document.querySelectorAll("#d-s button").forEach(x=>x.classList.toggle("pri",x===b))});
   $("dm").onclick=()=>{pick.q=Math.max(1,pick.q-1);$("dq").textContent=pick.q};$("dp").onclick=()=>{pick.q=Math.min(p.special?10:p.qty,10,pick.q+1);$("dq").textContent=pick.q};
+  const trk=$("trk");if(trk&&ph.length>1){const dots=[...document.querySelectorAll("#dots i")];dots.forEach((d,i)=>d.onclick=()=>trk.scrollTo({left:(H.dir==="rtl"?-1:1)*i*trk.clientWidth,behavior:"smooth"}));trk.onscroll=()=>{const i=Math.round(Math.abs(trk.scrollLeft)/trk.clientWidth);dots.forEach((d,j)=>d.classList.toggle("on",j===i))}}
   $("pd").showModal()}
 function addC(id){const p=prod(id),ex=cart.find(l=>l.id===id&&l.size===pick.s);
-  ex?ex.q=Math.min(ex.q+pick.q,p.special?10:p.qty):cart.push({id,size:pick.s,q:pick.q});$("pd").close();route();toast("Added to cart")}
+  ex?ex.q=Math.min(ex.q+pick.q,p.special?10:p.qty):cart.push({id,size:pick.s,q:pick.q,s:snap(p)});$("pd").close();route();toast("Added to cart")}
 
-(async()=>{chrome();route();try{await loadData()}catch(e){$("shopGrid").innerHTML='<p class="muted">Could not load products. Check your connection and refresh.</p>';return}chrome();loaded=true;route();renderShop()})();
+(async()=>{chrome();route();try{await loadData()}catch(e){ready=true;chrome();$("shopGrid").innerHTML='<p class="muted">Could not load products. Check your connection and refresh.</p>';return}ready=true;chrome();loaded=true;route();renderShop()})();
 if(lang==="ar"){new MutationObserver(ms=>ms.forEach(m=>{m.addedNodes.forEach(nd=>{if(nd.nodeType===1)walk(nd);else if(nd.nodeType===3&&!/SCRIPT|STYLE/.test(nd.parentNode.nodeName)){const v=tr(nd.nodeValue);if(v!==nd.nodeValue)nd.nodeValue=v}});
   if(m.type==="characterData"){const v=tr(m.target.nodeValue);if(v!==m.target.nodeValue)m.target.nodeValue=v}})).observe(document.body,{childList:true,subtree:true,characterData:true});walk(document.body)}
 </script>
