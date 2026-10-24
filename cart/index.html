@@ -91,6 +91,24 @@ footer#ftr{border-top:1px solid var(--line);margin-top:30px;padding:24px 16px 32
 .card img{object-fit:contain;background:var(--bg)}.thumbs img{object-fit:contain;background:var(--bg)}#big{max-height:60vh;object-fit:contain;background:var(--bg)}
 .ic{width:22px;height:22px;object-fit:contain;display:block}.round .ic{width:20px;height:20px}.logo:has(img){border:0}.logo img{width:100%;height:100%;object-fit:contain}
 .badge.sp{background:#1e293b;color:#93c5fd}[data-theme="light"] .badge.sp{background:#dbeafe;color:#1d4ed8}
+
+/* ---- v2 additions ---- */
+.ic{width:22px;height:22px;object-fit:contain;display:block}
+.cartlink{white-space:nowrap}
+.logo:not(:has(img))::after{content:attr(data-l);font-size:20px;color:var(--ink)}
+.ph{border-radius:14px;overflow:hidden;background:#faf8f5}
+.card img{background:#faf8f5;border-radius:14px;object-fit:contain}
+.tags{position:absolute;top:8px;inset-inline-start:8px;display:flex;flex-direction:column;gap:4px;align-items:flex-start;z-index:2}
+.tags .tag{position:static;inset-inline-start:auto}
+.tag.sp{background:#2563eb;color:#fff}
+.sl{position:relative;border-radius:16px;overflow:hidden;background:#faf8f5}
+.trk{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.trk::-webkit-scrollbar{display:none}
+dialog .trk img{flex:0 0 100%;width:100%;aspect-ratio:1;max-height:60vh;object-fit:contain;scroll-snap-align:center;scroll-snap-stop:always;background:#faf8f5;border-radius:0}
+.dots{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:10px}
+.dots i{width:8px;height:8px;border-radius:99px;background:var(--mute);opacity:.4;cursor:pointer;transition:all .2s}
+.dots i.on{width:20px;background:var(--ink);opacity:1}
+.ct{display:flex;align-items:center;gap:8px}
 </style>
 </head>
 <body>
@@ -98,7 +116,8 @@ footer#ftr{border-top:1px solid var(--line);margin-top:30px;padding:24px 16px 32
 <header id="hdr"></header>
 <main>
 <section id="v-cart" class="view on">
-  <div class="row"><h2>Your shopping cart</h2><span class="badge" id="cartCount"></span></div>
+  <div class="row"><h2 id="cartTitle" class="ct">Your shopping cart</h2><span class="badge" id="cartCount"></span></div>
+  <p id="cartErr" class="muted" hidden>Could not reach the store server. Showing your saved cart.</p>
   <div id="cartItems"></div>
   <div class="row muted" style="margin-top:14px"><span>Total items</span><span id="tItems"></span></div>
   <div class="row" style="font-size:18px;font-weight:600;margin-top:6px"><span>Order subtotal</span><span id="tSub"></span></div>
@@ -116,21 +135,21 @@ footer#ftr{border-top:1px solid var(--line);margin-top:30px;padding:24px 16px 32
 <footer id="ftr"></footer>
 <div id="toast" class="toast" hidden></div>
 <script>
-const API="https://young-hat-32fc.recachiastudios.workers.dev",PAGE="cart",ROOT=PAGE==="cart"?"../":"./";
+const API="https://young-hat-32fc.recachiastudios.workers.dev",PAGE="cart",ROOT=location.protocol==="file:"?(PAGE==="cart"?"../":"./"):location.origin+(PAGE==="cart"?location.pathname.replace(/\/cart(\.html|\/index\.html|\/)?$/,"/"):location.pathname.replace(/[^\/]*$/,""));
 let LOW=2;const isKid=t=>/girl|boy|baby|kid/i.test(t);
 const $=i=>document.getElementById(i),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
 let lang=LS("eshraqa.lang")||"ar",theme=LS("eshraqa.theme")||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");
 const H=document.documentElement;H.lang=lang;H.dir=lang==="ar"?"rtl":"ltr";H.dataset.theme=theme;
-const FB={Cart:"Cart",Sun:"☀",Moon:"☾"},ic=k=>`<img class="ic" src="${ROOT}icons/${k}.png" alt="" onerror="this.replaceWith(document.createTextNode('${FB[k]}'))">`;
+const IC={Cart:"cart.png",Sun:"Sun.png",Moon:"Moon.png"},FB={Cart:"🛒",Sun:"☀",Moon:"☾"},ic=k=>`<img class="ic" src="${ROOT}${IC[k]}" alt="" onerror="this.replaceWith(document.createTextNode('${FB[k]}'))">`;
 const AD="٠١٢٣٤٥٦٧٨٩",n=s=>lang==="ar"?String(s).replace(/\d/g,d=>AD[d]):String(s);
 const egp=v=>lang==="ar"?Number(v).toLocaleString("ar-EG")+" ج.م":"EGP "+Number(v).toLocaleString();
 const EMPTY=()=>({products:[],sales:[],settings:{}});let db=EMPTY();const prod=id=>db.products.find(p=>p.id===id);
 const pn=p=>lang==="en"&&p.nameEn?p.nameEn:p.name,pdsc=p=>lang==="en"&&p.descEn?p.descEn:(p.desc||"");
 let cart=[];try{cart=JSON.parse(LS("cart.v1"))||[]}catch(e){}
-const saveCart=()=>LS("cart.v1",JSON.stringify(cart)),lines=()=>cart.map(l=>({...l,p:prod(l.id)})).filter(l=>l.p);
+const saveCart=()=>LS("cart.v1",JSON.stringify(cart)),snap=p=>({name:p.name,nameEn:p.nameEn,price:p.price,color:p.color,special:p.special,qty:p.qty,type:p.type}),lines=()=>cart.map((l,i)=>({...l,i,p:prod(l.id)||(l.s?{id:l.id,...l.s}:null)})).filter(l=>l.p);
 /* ---- Arabic translation (English text on the left, Arabic on the right). Add new words here. ---- */
-const D={"Shop":"المتجر","Cart":"السلة","All pajamas":"كل البيجامات","Women":"نسائي","Kids":"أطفال","Search pajamas…":"ابحث عن بيجاما…","Category":"القسم","Size":"المقاس","Color":"اللون","Max price":"أعلى سعر","Newest":"الأحدث","Price: low to high":"السعر: الأقل أولًا","Price: high to low":"السعر: الأعلى أولًا","Most popular":"الأكثر مشاهدة","In stock":"متوفر","Sold out":"نفدت الكمية","View product":"عرض المنتج","Add to cart":"أضف إلى السلة","Close":"إغلاق","Quantity":"الكمية","Loading products…":"جارٍ تحميل المنتجات…","Our collection is coming soon.":"مجموعتنا قادمة قريبًا.","No products match.":"لا توجد منتجات مطابقة.","Clear filters":"مسح الفلاتر","Special order":"طلب خاص","Order this item":"اطلب هذا المنتج","Not in stock. Made only when you order it.":"غير متوفر بالمخزون. يُجهَّز عند الطلب فقط.","Join our WhatsApp group":"انضم إلى مجموعتنا على واتساب","Back to store":"العودة إلى المتجر","Sale":"تخفيض","New":"جديد","Added to cart":"تمت الإضافة إلى السلة","Your shopping cart":"سلة التسوق","Total items":"عدد القطع","Order subtotal":"إجمالي الطلب","Delivery charges are not included. Payment is arranged with the seller.":"لا تشمل رسوم التوصيل. يتم الاتفاق على الدفع مع البائع.","Delivery details":"بيانات التوصيل","Customer name":"الاسم","Delivery address or area":"عنوان التوصيل أو المنطقة","Additional notes (optional)":"ملاحظات إضافية (اختياري)","Delivery preferences or other details":"تفضيلات التوصيل أو أي تفاصيل أخرى","Remove":"حذف","Fewer":"أقل","More":"أكثر","Your cart is empty. Open a product and press Add to cart.":"سلتك فارغة. افتح أي منتج واضغط على أضف إلى السلة.","Check out":"إتمام الطلب","Back to shop":"العودة إلى المتجر","Theme":"المظهر","Contact us":"تواصل معنا","Instagram":"إنستجرام","My order":"طلبي","Subtotal":"الإجمالي","Name":"الاسم","Address":"العنوان","Notes":"ملاحظات","Please add your name and delivery address first.":"من فضلك اكتب اسمك وعنوان التوصيل أولًا.","Order image created. Please send it to us through Instagram or any app you like.":"تم إنشاء صورة الطلب. من فضلك أرسلها لنا عبر إنستجرام أو أي تطبيق تفضله.","Could not load products. Check your connection and refresh.":"تعذّر تحميل المنتجات. تأكد من الاتصال وأعد تحميل الصفحة.","Women’s pajama set":"طقم بيجاما نسائي","Women’s shorts set":"طقم شورت نسائي","Women’s nightgown":"قميص نوم نسائي","Women’s robe":"روب نسائي","Girls’ pajamas":"بيجامات بناتي","Boys’ pajamas":"بيجامات ولادي","Baby sleepwear":"ملابس نوم للرضع","Accessories":"إكسسوارات","Black":"أسود","White":"أبيض","Pink":"وردي","Red":"أحمر","Blue":"أزرق","Navy":"كحلي","Green":"أخضر","Grey":"رمادي","Gray":"رمادي","Beige":"بيج","Purple":"بنفسجي","Yellow":"أصفر","Brown":"بني","Orange":"برتقالي"};
+const D={"Shop":"المتجر","Cart":"السلة","All pajamas":"كل البيجامات","Women":"نسائي","Kids":"أطفال","Search pajamas…":"ابحث عن بيجاما…","Category":"النوع","Size":"المقاس","Color":"اللون","Max price":"أعلى سعر","Newest":"الأحدث","Price: low to high":"السعر: الأقل أولًا","Price: high to low":"السعر: الأعلى أولًا","Most popular":"الأكثر مشاهدة","In stock":"متوفر","Sold out":"نفدت الكمية","View product":"عرض المنتج","Add to cart":"أضف إلى السلة","Close":"إغلاق","Quantity":"الكمية","Loading products…":"جارٍ تحميل المنتجات…","Our collection is coming soon.":"مجموعتنا قادمة قريبًا.","No products match.":"لا توجد منتجات مطابقة.","Clear filters":"مسح الفلاتر","Special order":"طلب خاص","Order this item":"اطلب هذا المنتج","Not in stock. Made only when you order it. Extra fees may apply to the listed price.":"غير متوفر بالمخزون. يُجهَّز عند الطلب فقط، وقد تُضاف رسوم إضافية على السعر المعروض.","Extra fees may apply to special orders.":"قد تُضاف رسوم إضافية على الطلبات الخاصة.","Could not reach the store server. Showing your saved cart.":"تعذّر الاتصال بالخادم. نعرض السلة المحفوظة لديك.","Join our WhatsApp group":"انضم إلى مجموعتنا على واتساب","Back to store":"العودة إلى المتجر","Sale":"تخفيض","New":"جديد","Added to cart":"تمت الإضافة إلى السلة","Your shopping cart":"سلة التسوق","Total items":"عدد القطع","Order subtotal":"إجمالي الطلب","Delivery charges are not included. Payment is arranged with the seller.":"لا تشمل رسوم التوصيل. يتم الاتفاق على الدفع مع البائع.","Delivery details":"بيانات التوصيل","Customer name":"الاسم","Delivery address or area":"عنوان التوصيل أو المنطقة","Additional notes (optional)":"ملاحظات إضافية (اختياري)","Delivery preferences or other details":"تفضيلات التوصيل أو أي تفاصيل أخرى","Remove":"حذف","Fewer":"أقل","More":"أكثر","Your cart is empty. Open a product and press Add to cart.":"سلتك فارغة. افتح أي منتج واضغط على أضف إلى السلة.","Check out":"إتمام الطلب","Back to shop":"العودة إلى المتجر","Theme":"المظهر","Contact us":"تواصل معنا","Instagram":"إنستجرام","My order":"طلبي","Subtotal":"الإجمالي","Name":"الاسم","Address":"العنوان","Notes":"ملاحظات","Please add your name and delivery address first.":"من فضلك اكتب اسمك وعنوان التوصيل أولًا.","Order image created. Please send it to us through Instagram or any app you like.":"تم إنشاء صورة الطلب. من فضلك أرسلها لنا عبر إنستجرام أو أي تطبيق تفضله.","Could not load products. Check your connection and refresh.":"تعذّر تحميل المنتجات. تأكد من الاتصال وأعد تحميل الصفحة.","Women’s pajama set":"طقم بيجاما نسائي","Women’s shorts set":"طقم شورت نسائي","Women’s nightgown":"قميص نوم نسائي","Women’s robe":"روب نسائي","Girls’ pajamas":"بيجامات بناتي","Boys’ pajamas":"بيجامات ولادي","Baby sleepwear":"ملابس نوم للرضع","Accessories":"إكسسوارات","Black":"أسود","White":"أبيض","Pink":"وردي","Red":"أحمر","Blue":"أزرق","Navy":"كحلي","Green":"أخضر","Grey":"رمادي","Gray":"رمادي","Beige":"بيج","Purple":"بنفسجي","Yellow":"أصفر","Brown":"بني","Orange":"برتقالي"};
 const R=[[/^Only (\d+) left$/,"باقي $1 فقط"],[/^(\d+) items?$/,"$1 قطعة"],[/^View cart · (\d+) items? · (.*)$/,"عرض السلة · $1 قطعة · $2"],[/^Sizes: (.*)$/,"المقاسات: $1"],[/^Size (.+)$/,"المقاس $1"],[/^(.*) each$/,"$1 للقطعة"],[/^Call (.*)$/,"اتصل $1"]];
 const tr=s=>{if(lang!=="ar")return s;const k=s.trim();if(!k)return s;let r=D[k];if(r===undefined){r=k;for(const[re,p]of R)if(re.test(k)){r=k.replace(re,p);break}}
   r=r.replace(/(\d+)-(\d+)Y/g,"$1-$2 سنة").replace(/\d/g,d=>AD[d]);return r===k?s:s.replace(k,()=>r)};
@@ -140,27 +159,9 @@ function walk(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT)
 const brandName=()=>{const s=db.settings.name;return s&&s!=="Your Store"?s:(lang==="ar"?"إشراقة":"Eshraqa")};
 const tagline=()=>{const s=db.settings;return lang==="en"?(s.taglineEn||s.tagline||"Women’s & kids’ pajamas"):(s.tagline||"بيجامات نسائي وأطفال")};
 function chrome(){const s=db.settings,nm=brandName(),ig=(s.insta||"").replace(/^@/,"").trim(),phone=s.phone||"01055408169",ph=phone.replace(/[^\d+]/g,""),ann=lang==="en"?(s.announceEn||s.announce):s.announce;
-  document.title=nm;let fl=document.querySelector("link[rel=icon]");if(!fl){fl=document.createElement("link");fl.rel="icon";document.head.appendChild(fl)}fl.href=s.logo||ROOT+"icons/Icon.png";$("ann").hidden=!ann;$("ann").textContent=ann||"";
+  document.title=nm;let fl=document.querySelector("link[rel=icon]");if(!fl){fl=document.createElement("link");fl.rel="icon";document.head.appendChild(fl)}fl.href=s.logo||ROOT+"Icon.png";$("ann").hidden=!ann;$("ann").textContent=ann||"";
   /* LOGO: upload it in the developer page under Settings. The dashed circle is the reserved logo space. */
-  $("hdr").innerHTML=`<a class="brand" href="${ROOT}"><span class="logo"><img src="${s.logo||ROOT+"icons/Icon.png"}" alt="" onerror="this.replaceWith(document.createTextNode('LOGO'))"></span><span><b class="bn">${esc(nm)}</b><small>${esc(tagline())}</small></span></a>
-  <div class="acts">${PAGE==="cart"?`<a class="cartlink" href="${ROOT}">Back to store</a>`:`<a class="cartlink" href="${ROOT}cart/" aria-label="Cart">${ic("Cart")}<span class="cn" id="cartN">${cart.reduce((a,l)=>a+l.q,0)}</span></a>`}<button class="round" id="themeB" aria-label="Theme">${ic(theme==="dark"?"Sun":"Moon")}</button></div>`;
+  $("hdr").innerHTML=`<a class="brand" href="${ROOT}"><span class="logo" data-l="${esc(nm).slice(0,1)}"><img src="${s.logo||ROOT+"Icon.png"}" alt="" onerror="this.remove()"></span><span><b class="bn">${esc(nm)}</b><small>${esc(tagline())}</small></span></a>
+  <div class="acts">${PAGE==="cart"?`<a class="cartlink" href="${ROOT}">Back to store</a>`:`<a class="cartlink" href="${ROOT}cart/" aria-label="Cart">${ic("Cart")}<span>Cart</span><span class="cn" id="cartN">${cart.reduce((a,l)=>a+l.q,0)}</span></a>`}<button class="round" id="themeB" aria-label="Theme">${ic(theme==="dark"?"Sun":"Moon")}</button></div>`;
   const ct=[ig&&`<a href="https://instagram.com/${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`,ph&&`<a href="tel:${ph}">Call ${esc(phone)}</a>`].filter(Boolean).join("<br>");
-  $("ftr").innerHTML=`<div class="fg"><div><b class="bn">${esc(nm)}</b><p class="muted">${esc(tagline())}</p></div><div><b>Shop</b><br><a href="${ROOT}">All pajamas</a><br><a href="${ROOT}cart/">Cart</a></div>${ct?`<div><b>Contact us</b><br>${ct}</div>`:""}</div><p class="muted cp"><span>© ${new Date().getFullYear()} ${esc(nm)}</span><a href="#" id="langB">${lang==="ar"?"English":"العربية"}</a></p>`;
-  const dp=$("donePh");if(dp){dp.href="tel:"+ph;dp.textContent=phone}
-  $("langB").onclick=e=>{e.preventDefault();LS("eshraqa.lang",lang==="ar"?"en":"ar");location.reload()};
-  $("themeB").onclick=()=>{theme=theme==="dark"?"light":"dark";LS("eshraqa.theme",theme);H.dataset.theme=theme;$("themeB").innerHTML=ic(theme==="dark"?"Sun":"Moon")}}
-async function loadData(){const r=await fetch(API+"/api/store");db=Object.assign(EMPTY(),await r.json());db.products=db.products.filter(p=>!p.hidden);LOW=db.settings.low??2}
-let tt;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,1800)}
-function route(){saveCart();const q=cart.reduce((a,l)=>a+l.q,0),e=$("cartN");if(e)e.textContent=q;const b=$("cbar");
-  if(b){const L=lines(),sub=L.reduce((a,l)=>a+l.q*l.p.price,0);b.hidden=!L.length;b.textContent=`View cart · ${q} item${q>1?"s":""} · ${egp(sub)}`}
-  if(PAGE==="cart")renderCart()}
-/* ---- Cart ---- */
-function renderCart(){
-  const L=lines(),n=L.reduce((a,l)=>a+l.q,0),sub=L.reduce((a,l)=>a+l.q*l.p.price,0);
-  $("cartCount").textContent=n+" items";$("tItems").textContent=n;$("tSub").textContent=egp(sub);
-  $("cartItems").innerHTML=L.length?L.map((l,i)=>`<div class="item"><div class="row"><b>${esc(pn(l.p))}</b><b>${egp(l.p.price*l.q)}</b></div>
-  <small class="muted"><span>Size ${l.size}</span>${l.p.special?` · <span>Special order</span>`:""}${l.p.color?` · <span>${esc(l.p.color)}</span>`:""}<br>${egp(l.p.price)} each</small>
-  <div class="row" style="margin-top:8px"><div class="qty"><button class="sm" onclick="qty(${i},-1)" aria-label="Fewer">−</button>${l.q}<button class="sm" onclick="qty(${i},1)" aria-label="More">+</button></div>
-  <button class="sm dng" onclick="rm(${i})">Remove</button></div></div>`).join(""):'<p class="muted">Your cart is empty. Open a product and press Add to cart.</p>';
-  }
-function qty(i,d){con
+  $("ftr").innerHTML=`<div class="fg"><div><b class="bn">${esc(nm)}</b><p class="muted">${esc(tagline())}</p></div><div><b>Shop</b><br><a href="${ROOT}">All pajamas</a><br><a href="${ROOT}cart/">Cart</a></div>${ct?`<div><b>Contact us</b><br>${ct}</div>`:""}</div><p class="mute
