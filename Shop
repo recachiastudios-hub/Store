@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your Store</title>
+<style>
+:root{--bg:#000;--card:#0a0a0a;--ink:#fafafa;--mute:#a1a1a1;--line:#262626;--acc:#f0f0f0;--accink:#000;--ok:#4ade80;--okbg:#052e16;--warn:#ff7a3d;--warnbg:#3a1606;color-scheme:dark;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root:not([data-theme="light"]){}
+:root[data-theme="dark"]{--bg:#000}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,"Segoe UI",sans-serif}
+h1{font-size:20px;margin:0}h2{font-size:16px;margin:0 0 10px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px 6px}
+header small{color:var(--mute);display:block;font-size:12px}
+nav{display:flex;gap:6px;padding:6px 16px 12px}
+nav a{color:var(--mute);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:5px 14px;font-size:14px}
+nav a.on{color:var(--accink);background:var(--acc);border-color:var(--acc)}
+main{max-width:760px;margin:0 auto;padding:0 16px 40px}
+.view{display:none}.view.on{display:block}
+button,input,select,textarea{font:inherit;color:var(--ink)}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:10px 16px}
+textarea{border-radius:14px;min-height:70px;resize:vertical}
+input[type=checkbox]{width:auto;accent-color:#fff}
+label{display:block;font-size:13px;margin:12px 0 5px}
+button{cursor:pointer;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:9px 18px}
+button.pri{background:var(--acc);color:var(--accink);border-color:var(--acc);font-weight:600}
+button.sm{padding:3px 12px;font-size:13px}button.dng{color:var(--warn)}button:disabled{opacity:.4;cursor:not-allowed}
+button.full{width:100%;margin-top:8px}
+:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.panel,.stat,.card{background:var(--card);border:1px solid var(--line);border-radius:14px}
+.panel{padding:16px;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.stat{padding:16px}.stat b{display:block;font-size:26px;margin-top:6px}.stat span{color:var(--mute);font-size:14px}.stat small{color:var(--mute);font-size:12px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sizes{display:flex;flex-wrap:wrap;gap:14px}.sizes label{margin:0;display:flex;gap:6px;align-items:center;font-size:14px}
+.photo{border:1px dashed var(--line);border-radius:14px;padding:16px;text-align:center;margin-bottom:6px}
+.photo img{max-width:140px;border-radius:10px;display:block;margin:8px auto 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chips select,.chips input{width:auto;padding:5px 12px;font-size:13px;background-color:#171717;border-color:#171717}
+.chips label{display:flex;margin:0;align-items:center;gap:6px;font-size:13px;background:#171717;border-radius:99px;padding:5px 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.card{padding:8px}.card img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block}
+.card h3{font-size:14px;margin:8px 0 2px}.card p{margin:2px 0;font-size:14px}.card small{color:var(--mute);font-size:12px}
+.badge{display:inline-block;border-radius:6px;padding:1px 8px;font-size:12px;background:var(--okbg);color:var(--ok)}
+.badge.low{background:var(--warnbg);color:var(--warn)}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:620px;font-size:14px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}th{color:var(--mute);font-weight:400}
+td img{width:42px;height:42px;object-fit:cover;border-radius:8px}tr.low td{background:#1a0d06}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.muted{color:var(--mute)}.line{border:0;border-top:1px solid var(--line);margin:16px 0}
+dialog{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;width:min(420px,92vw);padding:16px}
+dialog::backdrop{background:rgba(0,0,0,.7)}dialog img{width:100%;border-radius:12px}
+pre{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;font:13px/1.4 inherit}
+.item{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.qty{display:flex;align-items:center;gap:10px}
+select{appearance:none;-webkit-appearance:none;cursor:pointer;background-color:#111;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23a1a1a1' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:42px;border-radius:99px}
+select:hover{border-color:#444}option{background:#111;color:#fafafa}
+.chips select{background-position:right 12px center;padding-right:32px}
+[hidden]{display:none!important}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:0 0 14px;padding-bottom:2px}.tabs button{white-space:nowrap}
+footer{text-align:center;padding:24px;font-size:13px}footer a{color:var(--mute)}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<header><div><h1 id="title">Your Store</h1><small>Pajamas for women and kids</small></div></header>
+<nav><a href="#shop" id="n-shop">Shop</a><a href="#cart" id="n-cart">Cart (<span id="cartN">0</span>)</a></nav>
+<main>
+<!-- SHOP -->
+<section id="v-shop" class="view">
+  <div class="tabs" id="grp"><button class="pri" data-g="">All pajamas</button><button data-g="w">Women</button><button data-g="k">Kids</button></div>
+  <input id="fq" placeholder="Search pajamas…" aria-label="Search">
+  <div class="chips">
+    <select id="fc" aria-label="Category"></select><select id="fs" aria-label="Size"></select><select id="fl" aria-label="Color"></select>
+    <input id="fp" type="number" min="0" placeholder="Max price" aria-label="Max price" style="width:110px">
+    <select id="fo" aria-label="Sort"><option value="">Newest</option><option value="a">Price: low to high</option><option value="d">Price: high to low</option><option value="p">Most popular</option></select>
+    <label><input type="checkbox" id="fi"> In stock</label>
+  </div>
+  <div id="shopGrid" class="grid"></div>
+</section>
+
+<!-- CART -->
+<section id="v-cart" class="view">
+  <div class="row"><h2>Your shopping cart</h2><span class="badge" id="cartCount"></span></div>
+  <div id="cartItems"></div>
+  <div class="row muted" style="margin-top:14px"><span>Total items</span><span id="tItems"></span></div>
+  <div class="row" style="font-size:18px;font-weight:600;margin-top:6px"><span>Order subtotal</span><span id="tSub"></span></div>
+  <small class="muted">Delivery charges are not included. Payment is arranged with the seller.</small>
+  <h2 style="margin-top:20px">Delivery details</h2>
+  <label for="c-name">Customer name</label><input id="c-name">
+  <label for="c-addr">Delivery address or area</label><textarea id="c-addr"></textarea>
+  <label for="c-note">Additional notes (optional)</label><textarea id="c-note" placeholder="Delivery preferences or other details"></textarea>
+  <label for="c-wa">Seller’s WhatsApp number (optional)</label><input id="c-wa" inputmode="numeric">
+  <small class="muted">Use international format without + or spaces. Leave blank to choose the recipient in WhatsApp.</small>
+  <button class="full" id="prevBtn">Preview WhatsApp message</button>
+  <pre id="prev" hidden></pre>
+  <button class="full pri" id="waBtn">Send order via WhatsApp</button>
+  <button class="full" id="photoBtn">Share order as photo (Instagram or any app)</button>
+</section>
+</main>
+<dialog id="pd"></dialog>
+<script>
+const API="PASTE_YOUR_WORKER_URL_HERE"; // example: https://store-api.yourname.workers.dev
+const LOW=2,ADULT=["S","M","L","XL","XXL"],KIDS=["1-2Y","3-4Y","5-6Y","7-8Y","9-10Y","11-12Y"],isKid=t=>/girl|boy|baby|kid/i.test(t);
+const $=i=>document.getElementById(i),uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const egp=n=>"EGP "+Number(n).toLocaleString();
+const EMPTY=()=>({products:[],sales:[],settings:{name:"Your Store",wa:""}});
+let db=EMPTY();const prod=id=>db.products.find(p=>p.id===id);
+let cart=[],grp="";
+const view=()=>location.hash.slice(1)||"shop";
+function route(){const v=view()==="cart"?"cart":"shop";
+  ["shop","cart"].forEach(x=>{$("v-"+x).classList.toggle("on",x===v);$("n-"+x).classList.toggle("on",x===v)});
+  $("title").textContent=db.settings.name||"Your Store";
+  ({shop:renderShop,cart:renderCart})[v]();$("cartN").textContent=cart.reduce((a,l)=>a+l.q,0)}
+addEventListener("hashchange",route);
+document.querySelectorAll("#grp button").forEach(b=>b.onclick=()=>{grp=b.dataset.g;document.querySelectorAll("#grp button").forEach(x=>x.classList.toggle("pri",x===b));renderShop()});
+/* ---- Shop ---- */
+function opts(sel,vals,label){const c=sel.value;sel.innerHTML=`<option value="">${label}</option>`+[...new Set(vals.filter(Boolean))].sort().map(v=>`<option>${esc(v)}</option>`).join("");sel.value=c}
+function renderShop(){
+  opts($("fc"),db.products.map(p=>p.type),"Category");opts($("fs"),db.products.flatMap(p=>p.sizes),"Size");opts($("fl"),db.products.map(p=>p.color),"Color");
+  const q=$("fq").value.toLowerCase(),c=$("fc").value,s=$("fs").value,l=$("fl").value,mp=parseFloat($("fp").value),st=$("fi").checked;
+  const L=db.products.filter(p=>(!q||p.name.toLowerCase().includes(q))&&(!c||p.type===c)&&(!grp||(isKid(p.type)?"k":"w")===grp)&&(!s||p.sizes.includes(s))&&(!l||p.color===l)&&(isNaN(mp)||p.price<=mp)&&(!st||p.qty>0));
+  const o=$("fo").value;if(o==="a")L.sort((a,b)=>a.price-b.price);if(o==="d")L.sort((a,b)=>b.price-a.price);if(o==="p")L.sort((a,b)=>b.clicks-a.clicks);
+  $("shopGrid").innerHTML=L.length?L.map(p=>`<div class="card"><img src="${p.photo}" alt="${esc(p.name)}"><h3>${esc(p.name)}</h3><p>${egp(p.price)}</p>
+  ${p.qty===0?'<span class="badge low">Sold out</span>':p.qty<=LOW?`<span class="badge low">Only ${p.qty} left</span>`:'<span class="badge">In stock</span>'}
+  <p><small>Sizes: ${p.sizes.join(", ")}</small></p><button class="full" onclick="openP('${p.id}')">View product</button></div>`).join(""):'<p class="muted">No products match. Try clearing a filter.</p>'}
+["fq","fc","fs","fl","fp","fi","fo"].forEach(i=>$(i).oninput=renderShop);
+function openP(id){const p=prod(id);p.clicks++;fetch(API+"/api/click",{method:"POST",body:JSON.stringify({id})}).catch(()=>{});
+  $("pd").innerHTML=`<img id="big" src="${p.photo}" alt="${esc(p.name)}">${(p.photos||[]).length>1?`<div style="display:flex;gap:6px;margin-top:6px">${p.photos.map(s=>`<img src="${s}" alt="" style="width:56px;height:56px;object-fit:cover;cursor:pointer" onclick="$('big').src=this.src">`).join("")}</div>`:""}<h2 style="margin-top:12px">${esc(p.name)}</h2><p>${egp(p.price)}${p.color?" · "+esc(p.color):""}</p>
+  <p class="muted">${esc(p.desc)}</p>${p.qty>0&&p.qty<=LOW?`<p><span class="badge low">Only ${p.qty} left</span></p>`:""}
+  <div class="two"><div><label for="d-s">Size</label><select id="d-s">${p.sizes.map(s=>`<option>${s}</option>`).join("")}</select></div>
+  <div><label for="d-q">Quantity</label><select id="d-q">${Array.from({length:Math.min(p.qty,10)},(_,i)=>`<option>${i+1}</option>`).join("")}</select></div></div>
+  <div class="row" style="margin-top:14px"><button onclick="$('pd').close()">Close</button>
+  <button class="pri" ${p.qty<1?"disabled":""} onclick="addC('${p.id}')">${p.qty<1?"Sold out":"+ Add to cart"}</button></div>`;$("pd").showModal()}
+function addC(id){const p=prod(id),s=$("d-s").value,q=+$("d-q").value,ex=cart.find(l=>l.id===id&&l.size===s);
+  ex?ex.q=Math.min(ex.q+q,p.qty):cart.push({id,size:s,q});$("pd").close();route()}
+
+/* ---- Cart ---- */
+const lines=()=>cart.map(l=>({...l,p:prod(l.id)})).filter(l=>l.p);
+function renderCart(){
+  const L=lines(),n=L.reduce((a,l)=>a+l.q,0),sub=L.reduce((a,l)=>a+l.q*l.p.price,0);
+  $("cartCount").textContent=n+" items";$("tItems").textContent=n;$("tSub").textContent=egp(sub);
+  $("cartItems").innerHTML=L.length?L.map((l,i)=>`<div class="item"><div class="row"><b>${esc(l.p.name)}</b><b>${egp(l.p.price*l.q)}</b></div>
+  <small class="muted">Size ${l.size}${l.p.color?" · "+esc(l.p.color):""}<br>${egp(l.p.price)} each</small>
+  <div class="row" style="margin-top:8px"><div class="qty"><button class="sm" onclick="qty(${i},-1)" aria-label="Fewer">−</button>${l.q}<button class="sm" onclick="qty(${i},1)" aria-label="More">+</button></div>
+  <button class="sm dng" onclick="rm(${i})">Remove</button></div></div>`).join(""):'<p class="muted">Your cart is empty. Open a product and press Add to cart.</p>';
+  if(!$("c-wa").value)$("c-wa").value=db.settings.wa}
+function qty(i,d){const l=cart[i],p=prod(l.id);l.q=Math.max(1,Math.min(l.q+d,p.qty));route()}
+function rm(i){cart.splice(i,1);route()}
+function msg(){const L=lines(),sub=L.reduce((a,l)=>a+l.q*l.p.price,0);
+  return["New order",...L.map(l=>`${l.q} x ${l.p.name} (${l.size}${l.p.color?", "+l.p.color:""}) - ${egp(l.p.price*l.q)}`),`Subtotal: ${egp(sub)}`,"",
+  `Name: ${$("c-name").value}`,`Address: ${$("c-addr").value}`,$("c-note").value?`Notes: ${$("c-note").value}`:""].filter((x,i,a)=>x!==""||a[i-1]!=="").join("\n")}
+$("prevBtn").onclick=()=>{$("prev").textContent=msg();$("prev").hidden=false};
+$("waBtn").onclick=()=>{if(!lines().length)return;if(!$("c-name").value.trim()||!$("c-addr").value.trim()){alert("Please add your name and delivery address first.");return}const n=$("c-wa").value.replace(/\D/g,"");
+  window.open(`https://wa.me/${n}?text=${encodeURIComponent(msg())}`,"_blank")};
+$("photoBtn").onclick=async()=>{const L=lines();if(!L.length)return;
+  const H=150+L.length*40+80,c=document.createElement("canvas");c.width=700;c.height=H;const x=c.getContext("2d");
+  x.fillStyle="#fff";x.fillRect(0,0,700,H);x.fillStyle="#111";x.font="bold 30px sans-serif";x.fillText("My order",30,50);
+  x.font="16px sans-serif";x.fillText($("c-name").value+" · "+$("c-addr").value.slice(0,50),30,80);x.font="19px sans-serif";
+  L.forEach((l,i)=>{const y=130+i*40;x.textAlign="left";x.fillText(`${l.q} × ${l.p.name} (${l.size})`,30,y);x.textAlign="right";x.fillText(egp(l.p.price*l.q),670,y)});
+  x.textAlign="left";x.font="bold 22px sans-serif";x.fillText("Subtotal",30,H-30);x.textAlign="right";x.fillText(egp(L.reduce((a,l)=>a+l.q*l.p.price,0)),670,H-30);
+  const b=await new Promise(r=>c.toBlob(r,"image/png")),f=new File([b],"order.png",{type:"image/png"});
+  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"My order"});return}}catch(e){if(e.name==="AbortError")return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="order.png";a.click();alert("Order photo saved. Send it from any app.")};
+
+
+async function init(){
+  if(API.startsWith("PASTE")){$("shopGrid").innerHTML='<p class="muted">Store not connected yet. Set the server address (API) in this file.</p>';return}
+  try{const r=await fetch(API+"/api/store");db=Object.assign(EMPTY(),await r.json())}
+  catch(e){$("shopGrid").innerHTML='<p class="muted">Could not load products. Check your connection and refresh.</p>';return}
+  route()}
+if(!location.hash)location.hash="#shop";route();init();
+</script>
+</body>
+</html>
