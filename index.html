@@ -63,10 +63,18 @@ select:hover{border-color:#444}option{background:#111;color:#fafafa}
 .tabs{display:flex;gap:6px;overflow-x:auto;margin:0 0 14px;padding-bottom:2px}.tabs button{white-space:nowrap}
 footer{text-align:center;padding:24px;font-size:13px}footer a{color:var(--mute)}
 @media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
+.brand{display:flex;align-items:center;gap:12px}.brand img{width:44px;height:44px;border-radius:50%;object-fit:cover}
+.ann{background:var(--acc);color:var(--accink);text-align:center;padding:8px 12px;font-size:14px}
+.ph{position:relative;cursor:pointer}.tag{position:absolute;top:8px;left:8px;background:#fff;color:#000;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}.tag.sale{background:var(--warn)}
+.pills{display:flex;flex-wrap:wrap;gap:8px}.thumbs{display:flex;gap:6px;margin-top:6px}.thumbs img{width:56px;height:56px;object-fit:cover;cursor:pointer;border-radius:8px}
+.cbar{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:728px;margin:0 auto;background:var(--acc);color:var(--accink);border-radius:99px;padding:14px 20px;text-align:center;font-weight:600;text-decoration:none;z-index:5}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:#fafafa;color:#000;border-radius:99px;padding:8px 18px;font-size:14px;z-index:20}
+main{padding-bottom:90px}
 </style>
 </head>
 <body>
-<header><div><h1 id="title">Your Store</h1><small>Pajamas for women and kids</small></div></header>
+<div id="ann" class="ann" hidden></div>
+<header><div class="brand"><img id="logo" alt="" hidden><div><h1 id="title">Your Store</h1><small id="tag" hidden></small></div></div></header>
 <nav><a href="#shop" id="n-shop">Shop</a><a href="#cart" id="n-cart">Cart (<span id="cartN">0</span>)</a></nav>
 <main>
 <!-- SHOP -->
@@ -79,7 +87,7 @@ footer{text-align:center;padding:24px;font-size:13px}footer a{color:var(--mute)}
     <select id="fo" aria-label="Sort"><option value="">Newest</option><option value="a">Price: low to high</option><option value="d">Price: high to low</option><option value="p">Most popular</option></select>
     <label><input type="checkbox" id="fi"> In stock</label>
   </div>
-  <div id="shopGrid" class="grid"></div>
+  <div id="shopGrid" class="grid"><p class="muted">Loading products…</p></div>
 </section>
 
 <!-- CART -->
@@ -93,51 +101,72 @@ footer{text-align:center;padding:24px;font-size:13px}footer a{color:var(--mute)}
   <label for="c-name">Customer name</label><input id="c-name">
   <label for="c-addr">Delivery address or area</label><textarea id="c-addr"></textarea>
   <label for="c-note">Additional notes (optional)</label><textarea id="c-note" placeholder="Delivery preferences or other details"></textarea>
-  <label for="c-wa">Seller’s WhatsApp number (optional)</label><input id="c-wa" inputmode="numeric">
-  <small class="muted">Use international format without + or spaces. Leave blank to choose the recipient in WhatsApp.</small>
+  <div id="waBox"><label for="c-wa">Seller’s WhatsApp number (optional)</label><input id="c-wa" inputmode="numeric">
+  <small class="muted">Use international format without + or spaces. Leave blank to choose the recipient in WhatsApp.</small></div>
   <button class="full" id="prevBtn">Preview WhatsApp message</button>
   <pre id="prev" hidden></pre>
   <button class="full pri" id="waBtn">Send order via WhatsApp</button>
   <button class="full" id="photoBtn">Share order as photo (Instagram or any app)</button>
 </section>
 </main>
+<footer id="foot"></footer>
+<a href="#cart" id="cbar" class="cbar" hidden></a>
+<div id="toast" class="toast" hidden></div>
 <dialog id="pd"></dialog>
 <script>
 const API="https://young-hat-32fc.recachiastudios.workers.dev"; // example: https://store-api.yourname.workers.dev
-const LOW=2,ADULT=["S","M","L","XL","XXL"],KIDS=["1-2Y","3-4Y","5-6Y","7-8Y","9-10Y","11-12Y"],isKid=t=>/girl|boy|baby|kid/i.test(t);
+let LOW=2;const ADULT=["S","M","L","XL","XXL"],KIDS=["1-2Y","3-4Y","5-6Y","7-8Y","9-10Y","11-12Y"],isKid=t=>/girl|boy|baby|kid/i.test(t);
 const $=i=>document.getElementById(i),uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const egp=n=>"EGP "+Number(n).toLocaleString();
 const EMPTY=()=>({products:[],sales:[],settings:{name:"Your Store",wa:""}});
 let db=EMPTY();const prod=id=>db.products.find(p=>p.id===id);
-let cart=[],grp="";
+let cart=[];try{cart=JSON.parse(localStorage.getItem("cart.v1"))||[]}catch(e){}
+let grp="",loaded=false;const seen=new Set(),isNew=p=>p.created&&Date.now()-p.created<7*864e5;
+const saveCart=()=>{try{localStorage.setItem("cart.v1",JSON.stringify(cart))}catch(e){}};
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,1800)}
 const view=()=>location.hash.slice(1)||"shop";
 function route(){const v=view()==="cart"?"cart":"shop";
   ["shop","cart"].forEach(x=>{$("v-"+x).classList.toggle("on",x===v);$("n-"+x).classList.toggle("on",x===v)});
-  $("title").textContent=db.settings.name||"Your Store";
-  ({shop:renderShop,cart:renderCart})[v]();$("cartN").textContent=cart.reduce((a,l)=>a+l.q,0)}
+  brand();
+  ({shop:renderShop,cart:renderCart})[v]();const n=cart.reduce((a,l)=>a+l.q,0);$("cartN").textContent=n;saveCart();
+  const CL=lines(),sub=CL.reduce((a,l)=>a+l.q*l.p.price,0);$("cbar").hidden=!(CL.length&&v==="shop");$("cbar").textContent=`View cart · ${n} item${n>1?"s":""} · ${egp(sub)}`}
+function brand(){const t=db.settings;$("title").textContent=t.name||"Your Store";document.title=t.name||"Your Store";
+  $("tag").textContent=t.tagline||"";$("tag").hidden=!t.tagline;$("logo").hidden=!t.logo;if(t.logo)$("logo").src=t.logo;
+  $("ann").hidden=!t.announce;$("ann").textContent=t.announce||"";
+  const wa=(t.wa||"").replace(/\D/g,""),ig=(t.insta||"").replace(/^@/,"").trim(),ph=(t.phone||"").replace(/[^\d+]/g,"");
+  $("foot").innerHTML=[wa&&`<a href="https://wa.me/${wa}" target="_blank" rel="noopener">WhatsApp</a>`,ig&&`<a href="https://instagram.com/${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`,ph&&`<a href="tel:${ph}">Call ${esc(t.phone)}</a>`].filter(Boolean).join(" · ")}
+function clearF(){["fq","fc","fs","fl","fp"].forEach(i=>$(i).value="");$("fi").checked=false;$("fo").value="";grp="";document.querySelectorAll("#grp button").forEach((x,i)=>x.classList.toggle("pri",i===0));renderShop()}
 addEventListener("hashchange",route);
 document.querySelectorAll("#grp button").forEach(b=>b.onclick=()=>{grp=b.dataset.g;document.querySelectorAll("#grp button").forEach(x=>x.classList.toggle("pri",x===b));renderShop()});
 /* ---- Shop ---- */
 function opts(sel,vals,label){const c=sel.value;sel.innerHTML=`<option value="">${label}</option>`+[...new Set(vals.filter(Boolean))].sort().map(v=>`<option>${esc(v)}</option>`).join("");sel.value=c}
 function renderShop(){
+  if(!loaded)return;
   opts($("fc"),db.products.map(p=>p.type),"Category");opts($("fs"),db.products.flatMap(p=>p.sizes),"Size");opts($("fl"),db.products.map(p=>p.color),"Color");
   const q=$("fq").value.toLowerCase(),c=$("fc").value,s=$("fs").value,l=$("fl").value,mp=parseFloat($("fp").value),st=$("fi").checked;
   const L=db.products.filter(p=>(!q||p.name.toLowerCase().includes(q))&&(!c||p.type===c)&&(!grp||(isKid(p.type)?"k":"w")===grp)&&(!s||p.sizes.includes(s))&&(!l||p.color===l)&&(isNaN(mp)||p.price<=mp)&&(!st||p.qty>0));
   const o=$("fo").value;if(o==="a")L.sort((a,b)=>a.price-b.price);if(o==="d")L.sort((a,b)=>b.price-a.price);if(o==="p")L.sort((a,b)=>b.clicks-a.clicks);
-  $("shopGrid").innerHTML=L.length?L.map(p=>`<div class="card"><img src="${p.photo}" alt="${esc(p.name)}"><h3>${esc(p.name)}</h3><p>${egp(p.price)}</p>
+  const price=p=>`<p><b>${egp(p.price)}</b>${p.old>p.price?` <s class="muted">${egp(p.old)}</s>`:""}</p>`;
+  $("shopGrid").innerHTML=L.length?L.map(p=>`<div class="card" ${p.qty<1?'style="opacity:.7"':""}><div class="ph" onclick="openP('${p.id}')"><img src="${p.photo}" alt="${esc(p.name)}" loading="lazy">${p.old>p.price?'<span class="tag sale">Sale</span>':isNew(p)?'<span class="tag">New</span>':""}</div><h3>${esc(p.name)}</h3>${price(p)}
   ${p.qty===0?'<span class="badge low">Sold out</span>':p.qty<=LOW?`<span class="badge low">Only ${p.qty} left</span>`:'<span class="badge">In stock</span>'}
-  <p><small>Sizes: ${p.sizes.join(", ")}</small></p><button class="full" onclick="openP('${p.id}')">View product</button></div>`).join(""):'<p class="muted">No products match. Try clearing a filter.</p>'}
+  <p><small>Sizes: ${p.sizes.join(", ")}</small></p><button class="full" onclick="openP('${p.id}')">View product</button></div>`).join(""):(db.products.length?`<p class="muted">No products match. <a href="#shop" onclick="clearF();return false" style="color:inherit">Clear filters</a></p>`:'<p class="muted">Our collection is coming soon.</p>')}
 ["fq","fc","fs","fl","fp","fi","fo"].forEach(i=>$(i).oninput=renderShop);
-function openP(id){const p=prod(id);p.clicks++;fetch(API+"/api/click",{method:"POST",body:JSON.stringify({id})}).catch(()=>{});
-  $("pd").innerHTML=`<img id="big" src="${p.photo}" alt="${esc(p.name)}">${(p.photos||[]).length>1?`<div style="display:flex;gap:6px;margin-top:6px">${p.photos.map(s=>`<img src="${s}" alt="" style="width:56px;height:56px;object-fit:cover;cursor:pointer" onclick="$('big').src=this.src">`).join("")}</div>`:""}<h2 style="margin-top:12px">${esc(p.name)}</h2><p>${egp(p.price)}${p.color?" · "+esc(p.color):""}</p>
+let pick={s:"",q:1};
+function openP(id){const p=prod(id);if(!p)return;if(!seen.has(id)){seen.add(id);p.clicks++;fetch(API+"/api/click",{method:"POST",body:JSON.stringify({id})}).catch(()=>{})}
+  pick={s:p.sizes[0],q:1};const ph=p.photos&&p.photos.length?p.photos:[p.photo];
+  $("pd").innerHTML=`<img id="big" src="${ph[0]}" alt="${esc(p.name)}">${ph.length>1?`<div class="thumbs">${ph.map(x=>`<img src="${x}" alt="" onclick="$('big').src=this.src">`).join("")}</div>`:""}
+  <h2 style="margin-top:12px">${esc(p.name)}</h2><p><b>${egp(p.price)}</b>${p.old>p.price?` <s class="muted">${egp(p.old)}</s>`:""}${p.color?` · ${esc(p.color)}`:""}</p>
   <p class="muted">${esc(p.desc)}</p>${p.qty>0&&p.qty<=LOW?`<p><span class="badge low">Only ${p.qty} left</span></p>`:""}
-  <div class="two"><div><label for="d-s">Size</label><select id="d-s">${p.sizes.map(s=>`<option>${s}</option>`).join("")}</select></div>
-  <div><label for="d-q">Quantity</label><select id="d-q">${Array.from({length:Math.min(p.qty,10)},(_,i)=>`<option>${i+1}</option>`).join("")}</select></div></div>
-  <div class="row" style="margin-top:14px"><button onclick="$('pd').close()">Close</button>
-  <button class="pri" ${p.qty<1?"disabled":""} onclick="addC('${p.id}')">${p.qty<1?"Sold out":"+ Add to cart"}</button></div>`;$("pd").showModal()}
-function addC(id){const p=prod(id),s=$("d-s").value,q=+$("d-q").value,ex=cart.find(l=>l.id===id&&l.size===s);
-  ex?ex.q=Math.min(ex.q+q,p.qty):cart.push({id,size:s,q});$("pd").close();route()}
+  <label>Size</label><div class="pills" id="d-s">${p.sizes.map((x,i)=>`<button class="${i?"":"pri"}" data-s="${x}">${x}</button>`).join("")}</div>
+  <label>Quantity</label><div class="qty"><button class="sm" id="dm" aria-label="Fewer">−</button><b id="dq">1</b><button class="sm" id="dp" aria-label="More">+</button></div>
+  <div class="row" style="margin-top:16px"><button onclick="$('pd').close()">Close</button>
+  <button class="pri" ${p.qty<1?"disabled":""} onclick="addC('${p.id}')">${p.qty<1?"Sold out":"Add to cart"}</button></div>`;
+  document.querySelectorAll("#d-s button").forEach(b=>b.onclick=()=>{pick.s=b.dataset.s;document.querySelectorAll("#d-s button").forEach(x=>x.classList.toggle("pri",x===b))});
+  $("dm").onclick=()=>{pick.q=Math.max(1,pick.q-1);$("dq").textContent=pick.q};$("dp").onclick=()=>{pick.q=Math.min(p.qty,10,pick.q+1);$("dq").textContent=pick.q};
+  $("pd").showModal()}
+function addC(id){const p=prod(id),ex=cart.find(l=>l.id===id&&l.size===pick.s);
+  ex?ex.q=Math.min(ex.q+pick.q,p.qty):cart.push({id,size:pick.s,q:pick.q});$("pd").close();route();toast("Added to cart")}
 
 /* ---- Cart ---- */
 const lines=()=>cart.map(l=>({...l,p:prod(l.id)})).filter(l=>l.p);
@@ -148,12 +177,14 @@ function renderCart(){
   <small class="muted">Size ${l.size}${l.p.color?" · "+esc(l.p.color):""}<br>${egp(l.p.price)} each</small>
   <div class="row" style="margin-top:8px"><div class="qty"><button class="sm" onclick="qty(${i},-1)" aria-label="Fewer">−</button>${l.q}<button class="sm" onclick="qty(${i},1)" aria-label="More">+</button></div>
   <button class="sm dng" onclick="rm(${i})">Remove</button></div></div>`).join(""):'<p class="muted">Your cart is empty. Open a product and press Add to cart.</p>';
-  if(!$("c-wa").value)$("c-wa").value=db.settings.wa}
+  $("c-wa").value=db.settings.wa||$("c-wa").value;$("waBox").hidden=!!db.settings.wa}
 function qty(i,d){const l=cart[i],p=prod(l.id);l.q=Math.max(1,Math.min(l.q+d,p.qty));route()}
 function rm(i){cart.splice(i,1);route()}
 function msg(){const L=lines(),sub=L.reduce((a,l)=>a+l.q*l.p.price,0);
   return["New order",...L.map(l=>`${l.q} x ${l.p.name} (${l.size}${l.p.color?", "+l.p.color:""}) - ${egp(l.p.price*l.q)}`),`Subtotal: ${egp(sub)}`,"",
   `Name: ${$("c-name").value}`,`Address: ${$("c-addr").value}`,$("c-note").value?`Notes: ${$("c-note").value}`:""].filter((x,i,a)=>x!==""||a[i-1]!=="").join("\n")}
+const CF=["c-name","c-addr","c-note"];try{const c=JSON.parse(localStorage.getItem("cust.v1")||"{}");CF.forEach(i=>$(i).value=c[i]||"")}catch(e){}
+CF.forEach(i=>$(i).oninput=()=>{try{localStorage.setItem("cust.v1",JSON.stringify(Object.fromEntries(CF.map(k=>[k,$(k).value]))))}catch(e){}});
 $("prevBtn").onclick=()=>{$("prev").textContent=msg();$("prev").hidden=false};
 $("waBtn").onclick=()=>{if(!lines().length)return;if(!$("c-name").value.trim()||!$("c-addr").value.trim()){alert("Please add your name and delivery address first.");return}const n=$("c-wa").value.replace(/\D/g,"");
   window.open(`https://wa.me/${n}?text=${encodeURIComponent(msg())}`,"_blank")};
@@ -170,7 +201,7 @@ $("photoBtn").onclick=async()=>{const L=lines();if(!L.length)return;
 
 async function init(){
   if(API.startsWith("PASTE")){$("shopGrid").innerHTML='<p class="muted">Store not connected yet. Set the server address (API) in this file.</p>';return}
-  try{const r=await fetch(API+"/api/store");db=Object.assign(EMPTY(),await r.json())}
+  try{const r=await fetch(API+"/api/store");db=Object.assign(EMPTY(),await r.json());db.products=db.products.filter(p=>!p.hidden);LOW=db.settings.low??2;loaded=true}
   catch(e){$("shopGrid").innerHTML='<p class="muted">Could not load products. Check your connection and refresh.</p>';return}
   route()}
 if(!location.hash)location.hash="#shop";route();init();
