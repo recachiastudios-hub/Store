@@ -1,1 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Eshraqa</title>
+<style>
+:root{--bg:#000;--card:#0a0a0a;--ink:#fafafa;--mute:#a1a1a1;--line:#262626;--acc:#f0f0f0;--accink:#000;--ok:#4ade80;--okbg:#052e16;--warn:#ff7a3d;--warnbg:#3a1606;color-scheme:dark;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root:not([data-theme="light"]){}
+:root[data-theme="dark"]{--bg:#000}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,"Segoe UI",sans-serif}
+h1{font-size:20px;margin:0}h2{font-size:16px;margin:0 0 10px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px 6px}
+header small{color:var(--mute);display:block;font-size:12px}
+nav{display:flex;gap:6px;padding:6px 16px 12px}
+nav a{color:var(--mute);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:5px 14px;font-size:14px}
+nav a.on{color:var(--accink);background:var(--acc);border-color:var(--acc)}
+main{max-width:760px;margin:0 auto;padding:0 16px 40px}
+.view{display:none}.view.on{display:block}
+button,input,select,textarea{font:inherit;color:var(--ink)}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:10px 16px}
+textarea{border-radius:14px;min-height:70px;resize:vertical}
+input[type=checkbox]{width:auto;accent-color:#fff}
+label{display:block;font-size:13px;margin:12px 0 5px}
+button{cursor:pointer;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:9px 18px}
+button.pri{background:var(--acc);color:var(--accink);border-color:var(--acc);font-weight:600}
+button.sm{padding:3px 12px;font-size:13px}button.dng{color:var(--warn)}button:disabled{opacity:.4;cursor:not-allowed}
+button.full{width:100%;margin-top:8px}
+:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.panel,.stat,.card{background:var(--card);border:1px solid var(--line);border-radius:14px}
+.panel{padding:16px;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.stat{padding:16px}.stat b{display:block;font-size:26px;margin-top:6px}.stat span{color:var(--mute);font-size:14px}.stat small{color:var(--mute);font-size:12px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sizes{display:flex;flex-wrap:wrap;gap:14px}.sizes label{margin:0;display:flex;gap:6px;align-items:center;font-size:14px}
+.photo{border:1px dashed var(--line);border-radius:14px;padding:16px;text-align:center;margin-bottom:6px}
+.photo img{max-width:140px;border-radius:10px;display:block;margin:8px auto 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chips select,.chips input{width:auto;padding:5px 12px;font-size:13px;background-color:#171717;border-color:#171717}
+.chips label{display:flex;margin:0;align-items:center;gap:6px;font-size:13px;background:#171717;border-radius:99px;padding:5px 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.card{padding:8px}.card img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block}
+.card h3{font-size:14px;margin:8px 0 2px}.card p{margin:2px 0;font-size:14px}.card small{color:var(--mute);font-size:12px}
+.badge{display:inline-block;border-radius:6px;padding:1px 8px;font-size:12px;background:var(--okbg);color:var(--ok)}
+.badge.low{background:var(--warnbg);color:var(--warn)}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:620px;font-size:14px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}th{color:var(--mute);font-weight:400}
+td img{width:42px;height:42px;object-fit:cover;border-radius:8px}tr.low td{background:#1a0d06}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.muted{color:var(--mute)}.line{border:0;border-top:1px solid var(--line);margin:16px 0}
+dialog{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;width:min(420px,92vw);padding:16px}
+dialog::backdrop{background:rgba(0,0,0,.7)}dialog img{width:100%;border-radius:12px}
+pre{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;font:13px/1.4 inherit}
+.item{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.qty{display:flex;align-items:center;gap:10px}
+select{appearance:none;-webkit-appearance:none;cursor:pointer;background-color:#111;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23a1a1a1' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:42px;border-radius:99px}
+select:hover{border-color:#444}option{background:#111;color:#fafafa}
+.chips select{background-position:right 12px center;padding-right:32px}
+[hidden]{display:none!important}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:0 0 14px;padding-bottom:2px}.tabs button{white-space:nowrap}
+footer{text-align:center;padding:24px;font-size:13px}footer a{color:var(--mute)}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
+.brand{display:flex;align-items:center;gap:12px}.brand img{width:44px;height:44px;border-radius:50%;object-fit:cover}
+.ann{background:var(--acc);color:var(--accink);text-align:center;padding:8px 12px;font-size:14px}
+.ph{position:relative;cursor:pointer}.tag{position:absolute;top:8px;left:8px;background:#fff;color:#000;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}.tag.sale{background:var(--warn)}
+.pills{display:flex;flex-wrap:wrap;gap:8px}.thumbs{display:flex;gap:6px;margin-top:6px}.thumbs img{width:56px;height:56px;object-fit:cover;cursor:pointer;border-radius:8px}
+.cbar{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:728px;margin:0 auto;background:var(--acc);color:var(--accink);border-radius:99px;padding:14px 20px;text-align:center;font-weight:600;text-decoration:none;z-index:5}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#fafafa;color:#000;border-radius:99px;padding:8px 18px;font-size:14px;z-index:20}
+main{padding-bottom:20px}
 
+:root[data-theme="light"]{--bg:#faf8f5;--card:#fff;--ink:#1a1a1a;--mute:#6b6b6b;--line:#e4e0da;--acc:#1a1a1a;--accink:#fff;--ok:#15803d;--okbg:#dcfce7;--warn:#c2410c;--warnbg:#ffedd5;color-scheme:light}
+[data-theme="light"] .chips select,[data-theme="light"] .chips input,[data-theme="light"] .chips label{background-color:#efece6;border-color:#efece6}
+[data-theme="light"] select{background-color:#fff}[data-theme="light"] option{background:#fff;color:#1a1a1a}
+[data-theme="light"] .tag{background:#1a1a1a;color:#fff}[data-theme="light"] input[type=checkbox]{accent-color:#1a1a1a}[data-theme="light"] :focus-visible{outline-color:#1a1a1a}
+select{padding-inline:16px 42px;background-position:right 16px center}[dir="rtl"] select{padding-inline:16px 42px;background-position:left 16px center}
+.chips select{padding-inline:12px 40px;background-position:right 12px center}[dir="rtl"] .chips select{padding-inline:12px 40px;background-position:left 12px center}
+.tag{left:auto;inset-inline-start:8px}
+header#hdr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;max-width:760px;margin:0 auto;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none}.brand small{display:block;color:var(--mute);font-size:12px}.bn{font-size:20px}
+.logo{width:48px;height:48px;border-radius:50%;border:1px dashed var(--line);display:grid;place-items:center;font-size:10px;color:var(--mute);overflow:hidden;flex:none}.logo img{width:100%;height:100%;object-fit:cover}
+.acts{display:flex;align-items:center;gap:8px}.cartlink{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:99px;padding:5px 14px;color:inherit;text-decoration:none}
+.cn{background:var(--acc);color:var(--accink);border-radius:99px;min-width:22px;text-align:center;font-size:12px;padding:1px 6px}
+footer#ftr{border-top:1px solid var(--line);margin-top:30px;padding:24px 16px 32px;text-align:start;font-size:14px}
+.fg{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px}.fg a{color:var(--mute);display:inline-block;margin-top:6px}
+.cp{max-width:760px;margin:20px auto 0;font-size:12px;display:flex;justify-content:space-between;align-items:center}.cp a{color:var(--mute);text-decoration:underline}
+.round{width:38px;height:38px;padding:0;display:grid;place-items:center;border-radius:50%;font-size:16px}
+
+.card img{object-fit:contain;background:var(--bg)}.thumbs img{object-fit:contain;background:var(--bg)}#big{max-height:60vh;object-fit:contain;background:var(--bg)}
+.ic{width:22px;height:22px;object-fit:contain;display:block}.round .ic{width:20px;height:20px}.logo:has(img){border:0}.logo img{width:100%;height:100%;object-fit:contain}
+.badge.sp{background:#1e293b;color:#93c5fd}[data-theme="light"] .badge.sp{background:#dbeafe;color:#1d4ed8}
+</style>
+</head>
+<body>
+<div id="ann" class="ann" hidden></div>
+<header id="hdr"></header>
+<main>
+<section id="v-cart" class="view on">
+  <div class="row"><h2>Your shopping cart</h2><span class="badge" id="cartCount"></span></div>
+  <div id="cartItems"></div>
+  <div class="row muted" style="margin-top:14px"><span>Total items</span><span id="tItems"></span></div>
+  <div class="row" style="font-size:18px;font-weight:600;margin-top:6px"><span>Order subtotal</span><span id="tSub"></span></div>
+  <small class="muted">Delivery charges are not included. Payment is arranged with the seller.</small>
+  <h2 style="margin-top:20px">Delivery details</h2>
+  <label for="c-name">Customer name</label><input id="c-name">
+  <label for="c-addr">Delivery address or area</label><textarea id="c-addr"></textarea>
+  <label for="c-note">Additional notes (optional)</label><textarea id="c-note" placeholder="Delivery preferences or other details"></textarea>
+  
+  <button class="full pri" id="photoBtn">Check out</button>
+  <a href="https://chat.whatsapp.com/CqKiZTw0gez3ACaaOONeE9?s=cl&amp;p=a&amp;mlu=4&amp;ilr=4" target="_blank" rel="noopener" style="display:block;text-align:center;border:1px solid var(--line);border-radius:99px;padding:9px 18px;margin-top:8px;color:inherit;text-decoration:none">Join our WhatsApp group</a>
+  <p id="done" class="muted" hidden>Order image created. Please send it to us through Instagram or any app you like.<br><a id="donePh" href="#" style="color:inherit"></a></p>
+</section>
+</main>
+<footer id="ftr"></footer>
+<div id="toast" class="toast" hidden></div>
+<script>
+const API="https://young-hat-32fc.recachiastudios.workers.dev",PAGE="cart",ROOT=PAGE==="cart"?"../":"./";
+let LOW=2;const isKid=t=>/girl|boy|baby|kid/i.test(t);
+const $=i=>document.getElementById(i),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
+let lang=LS("eshraqa.lang")||"ar",theme=LS("eshraqa.theme")||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");
+const H=document.documentElement;H.lang=lang;H.dir=lang==="ar"?"rtl":"ltr";H.dataset.theme=theme;
+const FB={Cart:"Cart",Sun:"☀",Moon:"☾"},ic=k=>`<img class="ic" src="${ROOT}icons/${k}.png" alt="" onerror="this.replaceWith(document.createTextNode('${FB[k]}'))">`;
+const AD="٠١٢٣٤٥٦٧٨٩",n=s=>lang==="ar"?String(s).replace(/\d/g,d=>AD[d]):String(s);
+const egp=v=>lang==="ar"?Number(v).toLocaleString("ar-EG")+" ج.م":"EGP "+Number(v).toLocaleString();
+const EMPTY=()=>({products:[],sales:[],settings:{}});let db=EMPTY();const prod=id=>db.products.find(p=>p.id===id);
+const pn=p=>lang==="en"&&p.nameEn?p.nameEn:p.name,pdsc=p=>lang==="en"&&p.descEn?p.descEn:(p.desc||"");
+let cart=[];try{cart=JSON.parse(LS("cart.v1"))||[]}catch(e){}
+const saveCart=()=>LS("cart.v1",JSON.stringify(cart)),lines=()=>cart.map(l=>({...l,p:prod(l.id)})).filter(l=>l.p);
+/* ---- Arabic translation (English text on the left, Arabic on the right). Add new words here. ---- */
+const D={"Shop":"المتجر","Cart":"السلة","All pajamas":"كل البيجامات","Women":"نسائي","Kids":"أطفال","Search pajamas…":"ابحث عن بيجاما…","Category":"القسم","Size":"المقاس","Color":"اللون","Max price":"أعلى سعر","Newest":"الأحدث","Price: low to high":"السعر: الأقل أولًا","Price: high to low":"السعر: الأعلى أولًا","Most popular":"الأكثر مشاهدة","In stock":"متوفر","Sold out":"نفدت الكمية","View product":"عرض المنتج","Add to cart":"أضف إلى السلة","Close":"إغلاق","Quantity":"الكمية","Loading products…":"جارٍ تحميل المنتجات…","Our collection is coming soon.":"مجموعتنا قادمة قريبًا.","No products match.":"لا توجد منتجات مطابقة.","Clear filters":"مسح الفلاتر","Special order":"طلب خاص","Order this item":"اطلب هذا المنتج","Not in stock. Made only when you order it.":"غير متوفر بالمخزون. يُجهَّز عند الطلب فقط.","Join our WhatsApp group":"انضم إلى مجموعتنا على واتساب","Back to store":"العودة إلى المتجر","Sale":"تخفيض","New":"جديد","Added to cart":"تمت الإضافة إلى السلة","Your shopping cart":"سلة التسوق","Total items":"عدد القطع","Order subtotal":"إجمالي الطلب","Delivery charges are not included. Payment is arranged with the seller.":"لا تشمل رسوم التوصيل. يتم الاتفاق على الدفع مع البائع.","Delivery details":"بيانات التوصيل","Customer name":"الاسم","Delivery address or area":"عنوان التوصيل أو المنطقة","Additional notes (optional)":"ملاحظات إضافية (اختياري)","Delivery preferences or other details":"تفضيلات التوصيل أو أي تفاصيل أخرى","Remove":"حذف","Fewer":"أقل","More":"أكثر","Your cart is empty. Open a product and press Add to cart.":"سلتك فارغة. افتح أي منتج واضغط على أضف إلى السلة.","Check out":"إتمام الطلب","Back to shop":"العودة إلى المتجر","Theme":"المظهر","Contact us":"تواصل معنا","Instagram":"إنستجرام","My order":"طلبي","Subtotal":"الإجمالي","Name":"الاسم","Address":"العنوان","Notes":"ملاحظات","Please add your name and delivery address first.":"من فضلك اكتب اسمك وعنوان التوصيل أولًا.","Order image created. Please send it to us through Instagram or any app you like.":"تم إنشاء صورة الطلب. من فضلك أرسلها لنا عبر إنستجرام أو أي تطبيق تفضله.","Could not load products. Check your connection and refresh.":"تعذّر تحميل المنتجات. تأكد من الاتصال وأعد تحميل الصفحة.","Women’s pajama set":"طقم بيجاما نسائي","Women’s shorts set":"طقم شورت نسائي","Women’s nightgown":"قميص نوم نسائي","Women’s robe":"روب نسائي","Girls’ pajamas":"بيجامات بناتي","Boys’ pajamas":"بيجامات ولادي","Baby sleepwear":"ملابس نوم للرضع","Accessories":"إكسسوارات","Black":"أسود","White":"أبيض","Pink":"وردي","Red":"أحمر","Blue":"أزرق","Navy":"كحلي","Green":"أخضر","Grey":"رمادي","Gray":"رمادي","Beige":"بيج","Purple":"بنفسجي","Yellow":"أصفر","Brown":"بني","Orange":"برتقالي"};
+const R=[[/^Only (\d+) left$/,"باقي $1 فقط"],[/^(\d+) items?$/,"$1 قطعة"],[/^View cart · (\d+) items? · (.*)$/,"عرض السلة · $1 قطعة · $2"],[/^Sizes: (.*)$/,"المقاسات: $1"],[/^Size (.+)$/,"المقاس $1"],[/^(.*) each$/,"$1 للقطعة"],[/^Call (.*)$/,"اتصل $1"]];
+const tr=s=>{if(lang!=="ar")return s;const k=s.trim();if(!k)return s;let r=D[k];if(r===undefined){r=k;for(const[re,p]of R)if(re.test(k)){r=k.replace(re,p);break}}
+  r=r.replace(/(\d+)-(\d+)Y/g,"$1-$2 سنة").replace(/\d/g,d=>AD[d]);return r===k?s:s.replace(k,()=>r)};
+function walk(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let x;while(x=w.nextNode()){if(/SCRIPT|STYLE/.test(x.parentNode.nodeName))continue;const v=tr(x.nodeValue);if(v!==x.nodeValue)x.nodeValue=v}
+  (root.querySelectorAll?root:document).querySelectorAll("[placeholder],[aria-label]").forEach(e=>["placeholder","aria-label"].forEach(a=>{const o=e.getAttribute(a);if(o){const v=tr(o);if(v!==o)e.setAttribute(a,v)}}))}
+/* ---- Header, footer and settings ---- */
+const brandName=()=>{const s=db.settings.name;return s&&s!=="Your Store"?s:(lang==="ar"?"إشراقة":"Eshraqa")};
+const tagline=()=>{const s=db.settings;return lang==="en"?(s.taglineEn||s.tagline||"Women’s & kids’ pajamas"):(s.tagline||"بيجامات نسائي وأطفال")};
+function chrome(){const s=db.settings,nm=brandName(),ig=(s.insta||"").replace(/^@/,"").trim(),phone=s.phone||"01055408169",ph=phone.replace(/[^\d+]/g,""),ann=lang==="en"?(s.announceEn||s.announce):s.announce;
+  document.title=nm;let fl=document.querySelector("link[rel=icon]");if(!fl){fl=document.createElement("link");fl.rel="icon";document.head.appendChild(fl)}fl.href=s.logo||ROOT+"icons/Icon.png";$("ann").hidden=!ann;$("ann").textContent=ann||"";
+  /* LOGO: upload it in the developer page under Settings. The dashed circle is the reserved logo space. */
+  $("hdr").innerHTML=`<a class="brand" href="${ROOT}"><span class="logo"><img src="${s.logo||ROOT+"icons/Icon.png"}" alt="" onerror="this.replaceWith(document.createTextNode('LOGO'))"></span><span><b class="bn">${esc(nm)}</b><small>${esc(tagline())}</small></span></a>
+  <div class="acts">${PAGE==="cart"?`<a class="cartlink" href="${ROOT}">Back to store</a>`:`<a class="cartlink" href="${ROOT}cart/" aria-label="Cart">${ic("Cart")}<span class="cn" id="cartN">${cart.reduce((a,l)=>a+l.q,0)}</span></a>`}<button class="round" id="themeB" aria-label="Theme">${ic(theme==="dark"?"Sun":"Moon")}</button></div>`;
+  const ct=[ig&&`<a href="https://instagram.com/${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`,ph&&`<a href="tel:${ph}">Call ${esc(phone)}</a>`].filter(Boolean).join("<br>");
+  $("ftr").innerHTML=`<div class="fg"><div><b class="bn">${esc(nm)}</b><p class="muted">${esc(tagline())}</p></div><div><b>Shop</b><br><a href="${ROOT}">All pajamas</a><br><a href="${ROOT}cart/">Cart</a></div>${ct?`<div><b>Contact us</b><br>${ct}</div>`:""}</div><p class="muted cp"><span>© ${new Date().getFullYear()} ${esc(nm)}</span><a href="#" id="langB">${lang==="ar"?"English":"العربية"}</a></p>`;
+  const dp=$("donePh");if(dp){dp.href="tel:"+ph;dp.textContent=phone}
+  $("langB").onclick=e=>{e.preventDefault();LS("eshraqa.lang",lang==="ar"?"en":"ar");location.reload()};
+  $("themeB").onclick=()=>{theme=theme==="dark"?"light":"dark";LS("eshraqa.theme",theme);H.dataset.theme=theme;$("themeB").innerHTML=ic(theme==="dark"?"Sun":"Moon")}}
+async function loadData(){const r=await fetch(API+"/api/store");db=Object.assign(EMPTY(),await r.json());db.products=db.products.filter(p=>!p.hidden);LOW=db.settings.low??2}
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,1800)}
+function route(){saveCart();const q=cart.reduce((a,l)=>a+l.q,0),e=$("cartN");if(e)e.textContent=q;const b=$("cbar");
+  if(b){const L=lines(),sub=L.reduce((a,l)=>a+l.q*l.p.price,0);b.hidden=!L.length;b.textContent=`View cart · ${q} item${q>1?"s":""} · ${egp(sub)}`}
+  if(PAGE==="cart")renderCart()}
+/* ---- Cart ---- */
+function renderCart(){
+  const L=lines(),n=L.reduce((a,l)=>a+l.q,0),sub=L.reduce((a,l)=>a+l.q*l.p.price,0);
+  $("cartCount").textContent=n+" items";$("tItems").textContent=n;$("tSub").textContent=egp(sub);
+  $("cartItems").innerHTML=L.length?L.map((l,i)=>`<div class="item"><div class="row"><b>${esc(pn(l.p))}</b><b>${egp(l.p.price*l.q)}</b></div>
+  <small class="muted"><span>Size ${l.size}</span>${l.p.special?` · <span>Special order</span>`:""}${l.p.color?` · <span>${esc(l.p.color)}</span>`:""}<br>${egp(l.p.price)} each</small>
+  <div class="row" style="margin-top:8px"><div class="qty"><button class="sm" onclick="qty(${i},-1)" aria-label="Fewer">−</button>${l.q}<button class="sm" onclick="qty(${i},1)" aria-label="More">+</button></div>
+  <button class="sm dng" onclick="rm(${i})">Remove</button></div></div>`).join(""):'<p class="muted">Your cart is empty. Open a product and press Add to cart.</p>';
+  }
+function qty(i,d){con
